@@ -1,0 +1,69 @@
+﻿@page "/recurrent-items"
+@attribute [Authorize]
+@if (!parentItemID.HasValue)
+{
+    <h1>Recurrent Items</h1>
+}
+
+@if (recurrentMoneyItems == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="form-row">
+        <div class="col-md-2 col">
+            Active<br>
+            <RadzenSwitch @bind-Value="@ShowOnlyActive" Change="ShowOnlyActiveOnChange" />
+        </div>
+        <div class="col-md-2 col">
+            <span>From:</span><br />
+            <RadzenDatePicker @bind-Value="FilterOnlyActiveDateFrom" DateFormat="dd/MM/yyyy" Change="@(args => FilterDateOnlyActiveChange(args, nameof(FilterOnlyActiveDateFrom)))" />
+        </div>
+        <div class="col-md-8 col">
+            <span>To:</span><br />
+            <RadzenDatePicker @bind-Value="FilterOnlyActiveDateTo" DateFormat="dd/MM/yyyy" Change="@(args => FilterDateOnlyActiveChange(args, nameof(FilterOnlyActiveDateTo)))" />
+        </div>
+    </div>
+    <button class="btn btn-success" @onclick="AddNew">
+        <span class="oi oi-plus" aria-hidden="true"></span>ADD
+    </button>
+    <div class="table-responsive-sm">
+        <table class="table table-sm table-striped table-hover mobile-resume">
+            <thead class="table-dark">
+                <tr>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Amount</th>
+                    <th>Note</th>
+                    <th>Recurrency</th>
+                    <th>Interval</th>
+                    <th>Type</th>
+                    @if (!parentItemID.HasValue)
+                    {
+                        <th>Items</th>
+                    }
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in recurrentMoneyItems)
+                {
+                    <tr class="item-action" @onclick="@(() => Edit(item))" >
+                        <td data-title="Start date">@item.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td data-title="End date">@item.EndDate?.ToString("dd/MM/yyyy")&nbsp; </td>
+                        <td data-title="Amount" class="text-right">@item.Amount.ToString("N2")</td>
+                        <td data-title="Note">@item.Note</td>
+                        <td data-title="Recurrency">@item.RecurrencyType.ToString()</td>
+                        <td data-title="Interval">@item.RecurrencyInterval</td>
+                        <td data-title="Type">@item.Type.ToString()</td>
+                        @if (!parentItemID.HasValue)
+                        {
+                            <td data-title="Items" @onclick:stopPropagation="true" @onclick:preventDefault="true" @onclick="@(() => ViewChild(item))"><a href="#">@item.AssociatedItems.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= DateTime.Now.Date).Count()</a></td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

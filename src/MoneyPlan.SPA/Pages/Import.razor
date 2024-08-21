@@ -1,0 +1,13 @@
+﻿@page "/import"
+@attribute [Authorize]
+<h1>Import</h1>
+
+<EditForm Model="Configuration" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-success">
+            <span class="oi oi-circle-check" aria-hidden="true"></span>IMPORT
+        </button>
+    </div>
+</EditForm>
