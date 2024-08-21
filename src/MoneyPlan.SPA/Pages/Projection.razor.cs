@@ -21,8 +21,6 @@ namespace MoneyPlan.SPA.Pages
 
         public bool ShowPastItems { get; set; } = false;
 
-        public bool ShowZero { get; set; } = false;
-
         public DateTime? FilterDateTo { get; set; }
 
         public Configuration CurrentConfiguration { get; set; }
@@ -65,10 +63,6 @@ namespace MoneyPlan.SPA.Pages
                 {
                     materializedMoneyItems = materializedMoneyItems[Array.IndexOf(materializedMoneyItems, lastBeforeToday)..];
                 }
-            }
-            if(!ShowZero)
-            {
-                materializedMoneyItems = materializedMoneyItems.Where(x => x.Amount != 0).ToArray();
             }
         }
 

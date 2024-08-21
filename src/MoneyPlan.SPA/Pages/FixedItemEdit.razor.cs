@@ -38,7 +38,6 @@ namespace MoneyPlan.SPA.Pages
             {
                 this.fixedItemToEdit.Date = DateTime.UtcNow.Date;
                 this.fixedItemToEdit.Amount = null;
-                this.fixedItemToEdit.AccumulateForBudget = true;
             }
         }
 

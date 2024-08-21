@@ -8,7 +8,7 @@
 else
 {
     <div class="form-row">
-     
+
         <div class="col-md-2 col-5">
             <span>To:</span><br />
             <RadzenDatePicker @bind-Value="FilterDateTo" DateFormat="dd/MM/yyyy" Change="@(args => Change(args, nameof(FilterDateTo)))" />
@@ -16,10 +16,6 @@ else
         <div class="col-md-1 col-2">
             <label>Past</label><br>
             <RadzenSwitch @bind-Value="@ShowPastItems" Change="PastItems_Changed" />
-        </div>
-        <div class="col-md-1 col-3">
-            <label>Zero</label><br>
-            <RadzenSwitch @bind-Value="@ShowZero" Change="Zero_Changed" />
         </div>
         <div class="col-md-8 col-2">
             <br />

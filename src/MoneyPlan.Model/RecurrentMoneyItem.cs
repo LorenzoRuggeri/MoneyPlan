@@ -32,8 +32,6 @@ namespace Savings.Model
         [Description("Rata")]
         InstallmentPayment,
 
-        PeriodicBudget,
-
         Others
     }
 

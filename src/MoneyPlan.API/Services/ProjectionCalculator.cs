@@ -22,19 +22,12 @@ namespace Savings.API.Services
             await this.context.SaveChangesAsync();
         }
 
-        private decimal CalculateCash(List<FixedMoneyItem> itemsToAccumulate, List<FixedMoneyItem> itemsNotAccumulate, Configuration config, decimal additionalCashLeft, DateTime periodStart)
+        private decimal CalculateCash(List<FixedMoneyItem> itemsNotAccumulate, Configuration config, decimal additionalCashLeft, DateTime periodStart)
         {
-            var cashItems = itemsNotAccumulate
-                            .Where(x => x.CategoryID != config.CashWithdrawalCategoryID && x.Cash)
-                            .Union(itemsToAccumulate
-                            .Where(x => x.CategoryID != config.CashWithdrawalCategoryID && x.Cash))
-                            .ToList();
+            var cashItems = itemsNotAccumulate.Where(x => x.CategoryID != config.CashWithdrawalCategoryID && x.Cash)
+                .ToList();
 
-
-            var cashWithdrawal = itemsNotAccumulate
-                .Where(x => x.CategoryID == config.CashWithdrawalCategoryID)
-                .Union(itemsToAccumulate
-                .Where(x => x.CategoryID == config.CashWithdrawalCategoryID))
+            var cashWithdrawal = itemsNotAccumulate.Where(x => x.CategoryID == config.CashWithdrawalCategoryID)
                 .OrderBy(x => x.Date).ToList();
 
             //There is additional cash left (ex. from previous month)
@@ -114,11 +107,7 @@ namespace Savings.API.Services
                 //       EDIT: A riga 197 si fa menzione di un PeriodicBudget che serve a sottrarre l'AccumulateForBudget. Mhhh.
                 var fixedItemsNotAccumulate = await context.FixedMoneyItems
                                                     .Include(x => x.Category)
-                                                    .Where(x => x.Date >= periodStart && x.Date <= periodEnd && !x.AccumulateForBudget)
-                                                    .AsNoTracking().ToListAsync();
-                
-                var fixedItemsAccumulate = await context.FixedMoneyItems
-                                                    .Where(x => x.Date >= periodStart && x.Date <= periodEnd && x.AccumulateForBudget)
+                                                    .Where(x => x.Date >= periodStart && x.Date <= periodEnd)
                                                     .AsNoTracking().ToListAsync();
                 
                 // TODO: Investigare sul come trasformare questa query per poter eliminare gli Adjustements.
@@ -136,7 +125,7 @@ namespace Savings.API.Services
                     endPeriodCashCarryUsed = true;
                     additionalCash = lastEndPeriod?.EndPeriodCashCarry ?? 0;
                 }
-                var cashLeftToSpend = CalculateCash(fixedItemsAccumulate, fixedItemsNotAccumulate, config, additionalCash, periodStart);
+                var cashLeftToSpend = CalculateCash(fixedItemsNotAccumulate, config, additionalCash, periodStart);
 
                 //********************************  Calculation 1: Fixed items to not accumulate
                 foreach (var fixedItem in fixedItemsNotAccumulate)
@@ -156,26 +145,7 @@ namespace Savings.API.Services
                     });
                 }
 
-                //********************************  Calculation 2: Fixed items to accumulate for budget
-                List<MaterializedMoneySubitems> lstSubItemsFixed = new();
-                var accumulateMaterializedItem = new MaterializedMoneyItem { Date = periodStart, Note = "🧾 Accumulator", TimelineWeight = 5, IsRecurrent = false, Subitems = lstSubItemsFixed };
-                foreach (var accumulateItem in fixedItemsAccumulate)
-                {
-                    accumulateMaterializedItem.Category = null;
-                    accumulateMaterializedItem.Amount += accumulateItem.Amount ?? 0;
-                    accumulateMaterializedItem.EndPeriod = false;
-                    accumulateMaterializedItem.Type = MoneyType.Others;
-
-                    lstSubItemsFixed.Add(new MaterializedMoneySubitems { Date = accumulateItem.Date, Amount = accumulateItem.Amount ?? 0, CategoryID = accumulateItem.CategoryID, Note = accumulateItem.Note });
-                }
-                if (fixedItemsAccumulate.Count > 0)
-                {
-                    accumulateMaterializedItem.Note += ": " + string.Join(',', fixedItemsAccumulate.Select(x => x.Note).ToArray());
-                }
-                res.Add(accumulateMaterializedItem);
-
                 //********************************  Calculation 3: Recurrent items 
-                var accumulatedForBudgetLeft = accumulateMaterializedItem.Amount;
                 foreach (var recurrentItem in recurrentItems)
                 {
                     var installments = CalculateInstallmentInPeriod(recurrentItem, periodStart, periodEnd);
@@ -193,14 +163,6 @@ namespace Savings.API.Services
                         var currentInstallmentDate = installment.currentDate;
                         var currentInstallmentAmount = recurrentItem.Amount;
                         var currentInstallmentNote = recurrentItem.Note;
-
-                        //Check if is a budget for subtract the accumulated
-                        if (recurrentItem.Type == MoneyType.PeriodicBudget)
-                        {
-                            decimal accumulatorToSubtract = accumulatedForBudgetLeft < currentInstallmentAmount ? currentInstallmentAmount : accumulatedForBudgetLeft;
-                            accumulatedForBudgetLeft -= accumulatorToSubtract;
-                            currentInstallmentAmount -= accumulatorToSubtract;
-                        }
 
                         List<MaterializedMoneySubitems> lstSubItemsRecurrent = new();
                         //Check if there are child items

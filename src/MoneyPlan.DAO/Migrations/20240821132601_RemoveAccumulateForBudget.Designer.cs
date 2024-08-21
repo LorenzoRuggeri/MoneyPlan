@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Savings.DAO.Infrastructure;
 
@@ -10,9 +11,11 @@ using Savings.DAO.Infrastructure;
 namespace Savings.DAO.Migrations
 {
     [DbContext(typeof(SavingsContext))]
-    partial class SavingsContextModelSnapshot : ModelSnapshot
+    [Migration("20240821132601_RemoveAccumulateForBudget")]
+    partial class RemoveAccumulateForBudget
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -134,7 +137,7 @@ namespace Savings.DAO.Migrations
                             ID = 1L,
                             Amount = 0m,
                             Cash = false,
-                            Date = new DateTime(2023, 12, 31, 0, 0, 0, 0, DateTimeKind.Local),
+                            Date = new DateTime(2024, 7, 31, 0, 0, 0, 0, DateTimeKind.Local),
                             EndPeriod = true,
                             EndPeriodCashCarry = 0m,
                             IsRecurrent = false,

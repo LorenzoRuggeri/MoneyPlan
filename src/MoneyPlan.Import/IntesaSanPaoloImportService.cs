@@ -56,7 +56,6 @@ namespace Savings.Import
                     var itemtoAdd = new FixedMoneyItem()
                     {
                         Cash = false,
-                        AccumulateForBudget = false,
                         Date = dateValue.GetValue<DateTime>(),
                         Category = MapCategory(categoryValue.GetValue<string>()),
                         Amount = amountValue.GetValue<decimal>(),
