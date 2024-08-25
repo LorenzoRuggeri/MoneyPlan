@@ -8,7 +8,12 @@
 else
 {
     <div class="form-row">
-
+        <div class="col-md-2 col">
+            <span>Account:</span><br />
+            <RadzenDropDown TValue="int?" @bind-Value="@FilterAccount" Data="@Accounts"
+                            TextProperty="Name" ValueProperty="ID"
+                            AllowClear=true Placeholder="All accounts" Change="@OnAccountChanged"></RadzenDropDown>
+        </div>
         <div class="col-md-2 col-5">
             <span>To:</span><br />
             <RadzenDatePicker @bind-Value="FilterDateTo" DateFormat="dd/MM/yyyy" Change="@(args => Change(args, nameof(FilterDateTo)))" />
@@ -97,7 +102,7 @@ else
                         <td class="transaction-type-col">
                             @if (!item.EndPeriod)
                             {
-                                @if (item.Category?.ID == CurrentConfiguration.CashWithdrawalCategoryID)
+                                @if (item.CategoryID == CurrentConfiguration.CashWithdrawalCategoryID)
                                 {
                                     <span class="oi oi-browser" aria-hidden="true"></span>
                                 }

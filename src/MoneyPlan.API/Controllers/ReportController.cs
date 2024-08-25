@@ -24,12 +24,12 @@ namespace Savings.API.Controllers
         }
 
         [HttpGet("GetCategoryResumeDetail")]
-        public async Task<ActionResult<ReportDetail[]>> GetCategoryResumeDetail(string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period)
+        public async Task<ActionResult<ReportDetail[]>> GetCategoryResumeDetail(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period)
         {
-            IEnumerable<ReportFullDetail> details = await GetCategoryDetailsAsync(periodPattern, dateFrom, dateTo);
+            IEnumerable<ReportFullDetail> details = await GetCategoryDetailsAsync(accountId, periodPattern, dateFrom, dateTo);
 
             var res = reportService.GetDetailsGroupedByCategory(details, category, period);
-            
+
             /*
             var res = details
                 .Where(x => x.CategoryID == category && x.Period == period)
@@ -40,10 +40,10 @@ namespace Savings.API.Controllers
         }
 
         [HttpGet("GetCategoryResume")]
-        public async Task<ActionResult<ReportCategory[]>> GetCategoryResume(string periodPattern, DateTime dateFrom, DateTime dateTo)
+        public async Task<ActionResult<ReportCategory[]>> GetCategoryResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
         {
             var categories = _context.MoneyCategories.ToList();
-            IEnumerable<ReportFullDetail> union = await GetCategoryDetailsAsync(periodPattern, dateFrom, dateTo);
+            IEnumerable<ReportFullDetail> union = await GetCategoryDetailsAsync(accountId, periodPattern, dateFrom, dateTo);
 
             // TODO: move this logic to a service that will be used elsewhere; while interacting MoneyCategories this should be the behaviour
             //       we want.
@@ -96,9 +96,9 @@ namespace Savings.API.Controllers
             */
         }
 
-        private async Task<IEnumerable<ReportFullDetail>> GetCategoryDetailsAsync(string periodPattern, DateTime dateFrom, DateTime dateTo)
+        private async Task<IEnumerable<ReportFullDetail>> GetCategoryDetailsAsync(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
         {
-            var projectionItems = await calculator.CalculateAsync(null, dateTo, null, false);
+            var projectionItems = await calculator.CalculateAsync(accountId, null, dateTo, null, false);
             var withdrawalID = _context.Configuration.FirstOrDefault()?.CashWithdrawalCategoryID;
 
 

@@ -76,11 +76,22 @@
             <ValidationMessage For="@(() => recurrentItemToEdit.OccurrencyType)" />
         </div>
     </div>
-    <div class="form-group">
-        <label>Category:</label>
-        <CategorySelector Items="Categories" @bind-Value="recurrentItemToEdit.CategoryID" />
-        <ValidationMessage For="@(() => recurrentItemToEdit.CategoryID)" />
+    <div class="form-row">
+        <div class="form-group col-6">
+            <label>Category:</label>
+            <CategorySelector Items="Categories" @bind-CategoryId="recurrentItemToEdit.CategoryID" />
+            <ValidationMessage For="@(() => recurrentItemToEdit.CategoryID)" />
+        </div>
+        <div class="form-group col-6">
+            <label>Account:</label>
+            <div>
+                <RadzenDropDown TValue="int?" @bind-Value="@recurrentItemToEdit.MoneyAccountId" Data="@Accounts"
+                                TextProperty="Name" ValueProperty="ID" AllowClear="false" />
+                <ValidationMessage For="@(() => recurrentItemToEdit.MoneyAccountId)" />
+            </div>
+        </div>
     </div>
+
     <div class="text-center">
         <button type="submit" class="btn btn-success">
             <span class="oi oi-circle-check" aria-hidden="true"></span>SAVE

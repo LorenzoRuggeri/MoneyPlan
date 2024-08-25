@@ -10,6 +10,12 @@ else
 {
     <div class="form-row">
         <div class="col-md-2 col">
+            <span>Account:</span><br />
+            <RadzenDropDown TValue="int?" @bind-Value="@FilterAccount" Data="@Accounts"
+                            TextProperty="Name" ValueProperty="ID"
+                            AllowClear=true Placeholder="All accounts" Change="@OnAccountChanged" ></RadzenDropDown>
+        </div>
+        <div class="col-md-2 col">
             <span>From:</span><br />
             <RadzenDatePicker ShowDays="false" @bind-Value="FilterDateFrom" DateFormat="dd/MM/yyyy" CurrentDateChanged="@OnFromDateChanged"/>
         </div>
@@ -17,12 +23,12 @@ else
             <span>To:</span><br />
             <RadzenDatePicker ShowDays="false" @bind-Value="FilterDateTo" DateFormat="dd/MM/yyyy" CurrentDateChanged="@OnToDateChanged" />
         </div>
-        <div class="col-md-8 col">
+        <div class="col-md-6 col">
             <div class="row rounded-2 border-dark border">
                 <div class="col-md-6">
                     <label>Category:</label>
                     <div>
-                        <CategorySelector Items="Categories" HideChildren="true" @bind-Value="FilterCategory" OnChanged="@FilterCategoryChanged" />
+                        <CategorySelector Items="Categories" HideChildren="true" @bind-CategoryId="FilterCategory" OnChanged="@FilterCategoryChanged" />
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -43,6 +49,7 @@ else
     <button class="btn btn-success" @onclick="AddNew">
         <span class="oi oi-plus" aria-hidden="true"></span>ADD
     </button>
+
     <div class="table-responsive-sm">
         <table class="table table-sm table-striped table-hover mobile-resume">
             <thead class="table-dark">

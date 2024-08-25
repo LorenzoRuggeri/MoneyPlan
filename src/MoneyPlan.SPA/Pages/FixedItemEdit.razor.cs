@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Radzen;
 using Savings.Model;
 using MoneyPlan.SPA.Services;
+using Radzen.Blazor;
 
 namespace MoneyPlan.SPA.Pages
 {
@@ -21,16 +22,22 @@ namespace MoneyPlan.SPA.Pages
         [Parameter]
         public FixedMoneyItem fixedItemToEdit { get; set; }
 
-        public bool Incoming { get; set; }
-
         [Parameter]
         public bool isNew { get; set; }
+
+        [Parameter]
+        public int AccountID { get; set; }
+
+        public bool Incoming { get; set; }
 
         bool Credit { get; set; } = false;
 
         public MoneyCategory[] Categories { get; set; }
+        public MoneyAccount[] Accounts { get; private set; }
 
         InputNumber<decimal?> amountInputNumber;
+
+        RadzenDropDown<int> accountSelector;
 
         protected override void OnInitialized()
         {
@@ -38,6 +45,7 @@ namespace MoneyPlan.SPA.Pages
             {
                 this.fixedItemToEdit.Date = DateTime.UtcNow.Date;
                 this.fixedItemToEdit.Amount = null;
+                this.fixedItemToEdit.AccountID = AccountID;
             }
         }
 
@@ -45,6 +53,11 @@ namespace MoneyPlan.SPA.Pages
         {
             if (firstRender)
             {
+                if (!isNew)
+                {
+                    accountSelector.Disabled = true;
+                }
+                
                 await Task.Delay(500);
                 await amountInputNumber.Element.Value.FocusAsync();
             }
@@ -53,11 +66,17 @@ namespace MoneyPlan.SPA.Pages
         protected override async Task OnInitializedAsync()
         {
             Categories = await savingsAPI.GetMoneyCategories();
+            Accounts = await savingsAPI.GetMoneyAccounts();
             Incoming = fixedItemToEdit.Amount > 0;
         }
 
         bool ValidateData()
         {
+            if (fixedItemToEdit.AccountID == default)
+            {
+                notificationService.Notify(NotificationSeverity.Error, "Attention", "The Account must be selected");
+                return false;
+            }
             if (fixedItemToEdit.Amount == null || fixedItemToEdit.Amount == 0)
             {
                 notificationService.Notify(NotificationSeverity.Error, "Attention", "The amount must contain a value and be different than 0");

@@ -23,6 +23,7 @@ namespace MoneyPlan.SPA.Pages
         public RecurrentMoneyItem recurrentItemToEdit { get; set; }
 
         public MoneyCategory[] Categories { get; set; }
+        public MoneyAccount[] Accounts { get; private set; }
 
         [Parameter]
         public bool isNew { get; set; }
@@ -34,7 +35,6 @@ namespace MoneyPlan.SPA.Pages
         public RecurrentMoneyItem parentItem { get; set; } = null;
 
         InputNumber<decimal> amountInputNumber;
-
 
         protected override async void OnAfterRender(bool firstRender)
         {
@@ -65,6 +65,7 @@ namespace MoneyPlan.SPA.Pages
         protected override async Task OnInitializedAsync()
         {
             Categories = await savingsAPI.GetMoneyCategories();
+            Accounts = await savingsAPI.GetMoneyAccounts();
         }
 
         async Task Delete()
@@ -90,6 +91,11 @@ namespace MoneyPlan.SPA.Pages
             if (recurrentItemToEdit.CategoryID == null)
             {
                 notificationService.Notify(NotificationSeverity.Error, "Attention", "Category is mandatory field");
+                return false;
+            }
+            if (recurrentItemToEdit.MoneyAccountId == null)
+            {
+                notificationService.Notify(NotificationSeverity.Error, "Attention", "Account is mandatory field");
                 return false;
             }
             return true;

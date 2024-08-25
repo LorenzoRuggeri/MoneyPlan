@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyPlan.DAO", "MoneyPlan.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{55E57F32-41AD-48C1-ADEF-F5336BE49D91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyPlan.API.Tests", "Tests\MoneyPlan.API.Tests\MoneyPlan.API.Tests.csproj", "{501A30B0-2E8D-423E-9D8D-147036B2AF5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,9 +43,16 @@ Global
 		{5AC38F37-7FFD-4886-9F3E-F7FE54AA488E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC38F37-7FFD-4886-9F3E-F7FE54AA488E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AC38F37-7FFD-4886-9F3E-F7FE54AA488E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{501A30B0-2E8D-423E-9D8D-147036B2AF5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{501A30B0-2E8D-423E-9D8D-147036B2AF5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{501A30B0-2E8D-423E-9D8D-147036B2AF5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{501A30B0-2E8D-423E-9D8D-147036B2AF5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{501A30B0-2E8D-423E-9D8D-147036B2AF5B} = {55E57F32-41AD-48C1-ADEF-F5336BE49D91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DFAA7E29-97BB-4B41-8FBE-FED4D1EC1690}

@@ -38,7 +38,13 @@ namespace MoneyPlan.SPA.Pages
             try
             {
                 if (!ValidateData()) return;
-                await savingsAPI.EditLastMaterializedMoneyItemPeriod(LastMaterializedDate,LastMaterializedAmount);
+                // TODO: Valutare cosa fare con questa possibile mancata configurazione.
+                try
+                {
+                    await savingsAPI.EditLastMaterializedMoneyItemPeriod(LastMaterializedDate, LastMaterializedAmount);
+                } catch
+                { 
+                }                
                 await savingsAPI.PutConfiguration(Configuration.ID, Configuration);
             }
             catch

@@ -1,7 +1,6 @@
 ﻿<div class="d-inline-flex mw-100">
     <RadzenLabel Text="@ParentCategory?.Description" />
-    
-    <InputSelectNumber Value="@Value" ValueExpression="@(() => Value)" ValueChanged="@((long? value) => UpdateCategory(value))" class="form-control">
+    <InputSelectNumber Value="@CategoryId" ValueExpression="@(() => CategoryId)" ValueChanged="@((long? value) => UpdateCategory(value))" class="form-control">
         <option value=""></option>
         @{
             if (Items != null)
@@ -10,14 +9,14 @@
                 {
                     if (!value.Children.Any())
                     {
-                        <option value="@value.Parent.ID" selected="@(value.Parent.ID == Value)">@value.Parent.Icon @value.Parent.Description</option>
+                        <option value="@value.Parent.ID" selected="@(value.Parent.ID == CategoryId)">@value.Parent.Icon @value.Parent.Description</option>
                     }
                     else
                     {
                         <optgroup label="@value.Parent.Description">
                             @foreach (var child in value.Children)
                             {
-                                <option value="@child.ID" selected="@(child.ID == Value)">@child.Icon @child.Description</option>
+                                <option value="@child.ID" selected="@(child.ID == CategoryId)">@child.Icon @child.Description</option>
                             }
                         </optgroup>
                     }

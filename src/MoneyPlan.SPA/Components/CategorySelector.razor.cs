@@ -14,10 +14,10 @@ namespace MoneyPlan.SPA.Components
         }
 
         [Parameter]
-        public long? Value { get; set; }
+        public long? CategoryId { get; set; }
 
         [Parameter]
-        public EventCallback<long?> ValueChanged { get; set; } = default!;
+        public EventCallback<long?> CategoryIdChanged { get; set; } = default!;
 
         [Parameter]
         public IEnumerable<MoneyCategory> Items { get; set; } = Enumerable.Empty<MoneyCategory>();
@@ -34,7 +34,22 @@ namespace MoneyPlan.SPA.Components
 
         protected override void OnInitialized()
         {
-            UpdateCategory(Value);
+            //UpdateCategory(Value);
+            base.OnInitialized();
+        }
+
+        protected override void OnAfterRender(bool firstRender)
+        {
+            //base.OnAfterRender(firstRender);
+            if (firstRender)
+            {
+                UpdateCategory(CategoryId);
+            }
+        }
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            return base.SetParametersAsync(parameters);
         }
 
         private IEnumerable<CategoryViewModel> RenderItems
@@ -121,12 +136,12 @@ namespace MoneyPlan.SPA.Components
             if (three != null)
             {
                 ParentCategory = three;
-                this.StateHasChanged();
+                //this.StateHasChanged();
             }
             //Value = value;
-            ValueChanged.InvokeAsync(value);
+            CategoryIdChanged.InvokeAsync(value);
             OnChanged.InvokeAsync(value);
-            //StateHasChanged();
         }
+
     }
 }

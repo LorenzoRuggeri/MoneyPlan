@@ -24,9 +24,10 @@ namespace Savings.API.Controllers
 
         // GET: api/RecurrentMoneyItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RecurrentMoneyItem>>> GetRecurrentMoneyItems(long? parentItemID, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo)
+        public async Task<ActionResult<IEnumerable<RecurrentMoneyItem>>> GetRecurrentMoneyItems(int? accountId, long? parentItemID, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo)
         {
             var res = _context.RecurrentMoneyItems.Include(x => x.AssociatedItems).AsQueryable();
+            if (accountId.HasValue) res = res.Where(x => x.MoneyAccountId == accountId);
             if (onlyActive) res = res.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= DateTime.Now.Date);
             if (endDateFrom.HasValue) res = res.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= endDateFrom.Value);
             if (endDateTo.HasValue) res = res.Where(x => x.EndDate.HasValue && x.EndDate <= endDateTo.Value);
@@ -61,6 +62,9 @@ namespace Savings.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutRecurrentMoneyItem(long id, RecurrentMoneyItem recurrentMoneyItem)
         {
+            // TODO: sarebbe opportuno controllare che il RecurrentMoneyItem non sia gia' stato storicizzato.
+            //       In tal caso e' da impedire l'Update e notificare l'utente.
+
             if (id != recurrentMoneyItem.ID)
             {
                 return BadRequest();

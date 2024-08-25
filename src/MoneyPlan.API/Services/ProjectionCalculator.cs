@@ -17,73 +17,134 @@ namespace Savings.API.Services
 
         public async Task SaveProjectionToHistory(DateTime date)
         {
-            var projectionItems = await CalculateAsync(null, null, date, false, false);
+            var projectionItems = await CalculateAsync(null, null, null, date, false, false);
             await this.context.MaterializedMoneyItems.AddRangeAsync(projectionItems);
             await this.context.SaveChangesAsync();
         }
 
-        private decimal CalculateCash(List<FixedMoneyItem> itemsNotAccumulate, Configuration config, decimal additionalCashLeft, DateTime periodStart)
+        internal decimal CalculateCash(List<FixedMoneyItem> itemsNotAccumulate, Configuration config, decimal additionalCashLeft, DateTime periodStart)
         {
-            var cashItems = itemsNotAccumulate.Where(x => x.CategoryID != config.CashWithdrawalCategoryID && x.Cash)
+            // We don't want to modify cash earnings, so we're deep cloning them to be sure they will be untouched 
+            var cashEarned = itemsNotAccumulate.ConvertAll(x => x.Clone())
+                .Where(x => x.CategoryID != config.CashWithdrawalCategoryID && x.Cash && x.Amount > 0)
                 .ToList();
 
-            var cashWithdrawal = itemsNotAccumulate.Where(x => x.CategoryID == config.CashWithdrawalCategoryID)
+            // We don't want to modify the cash expenses, so we're deep cloning them to be sure they will be untouched
+            var cashSpent = itemsNotAccumulate.ConvertAll(x => x.Clone())
+                .Where(x => x.CategoryID != config.CashWithdrawalCategoryID && x.Cash && x.Amount < 0)
+                .ToList();
+
+            var cashWithdrawal = itemsNotAccumulate
+                .Where(x => x.CategoryID == config.CashWithdrawalCategoryID)
                 .OrderBy(x => x.Date).ToList();
 
+            
             //There is additional cash left (ex. from previous month)
             const long cashWithdrawalAdditionalCashLeftID = 99999999999999999;
             if (additionalCashLeft != 0)
             {
-                cashWithdrawal.Insert(0, new FixedMoneyItem { ID = cashWithdrawalAdditionalCashLeftID, Cash = true, Amount = additionalCashLeft, Note = "Additional Cash", Date = periodStart });
+                cashEarned.Insert(0, new FixedMoneyItem
+                { 
+                    ID = cashWithdrawalAdditionalCashLeftID, Cash = true, Amount = additionalCashLeft, Note = "Additional Cash", Date = periodStart
+                });
             }
 
-
+            var lstItemsToRemove = new List<FixedMoneyItem>();
             decimal carryCashExpenses = 0;
             decimal cashLeftToSpend = 0;
-            foreach (var cashWithdrawalItem in cashWithdrawal)
+
+            // Before to interact with Withdrawals, we want to use cash left from previous period or cash earned this period.
+            foreach (var item in cashEarned)
             {
-                var currentCashItems = cashItems.Where(x => x.Date >= cashWithdrawalItem.Date).OrderBy(x => x.Date);
-                if (currentCashItems.Any()) cashWithdrawalItem.Note += $"(Original amount {cashWithdrawalItem.Amount})";
-                if (carryCashExpenses > 0)
+                // We want to consider only the cash expenses AFTER we got cash credit; otherwise we didn't have the cash to use for them.
+                var currentCashItems = cashSpent.Where(x => x.Date >= item.Date).OrderBy(x => x.Date);
+                if (currentCashItems.Any()) item.Note += $" (Original amount {item.Amount})";
+
+                foreach (var currentCashExpense in currentCashItems)
                 {
-                    cashWithdrawalItem.Amount += carryCashExpenses;
-                    carryCashExpenses = 0;
-                }
-                var lstItemsToRemove = new List<FixedMoneyItem>();
-                foreach (var currentCashItem in currentCashItems)
-                {
-                    cashWithdrawalItem.Amount -= currentCashItem.Amount;
-                    //If it's subctracted from the additional cash (ex. from the prvious month). It has already been subtracted so it must be counted as 0 for this month balance
-                    if (cashWithdrawalItem.ID == cashWithdrawalAdditionalCashLeftID)
+                    decimal creditToSubtract = 0;
+                    creditToSubtract = Math.Min(Math.Abs(item.Amount.Value), Math.Abs(currentCashExpense.Amount.Value));
+                    currentCashExpense.Amount += creditToSubtract;
+                    item.Amount -= creditToSubtract;
+
+                    // Remove the zero values, so we don't cycle it.
+                    if (currentCashExpense.Amount == 0)
                     {
-                        if (cashWithdrawalItem.Amount >= 0)
-                            currentCashItem.Amount = -cashWithdrawalItem.Amount;
-                        else
-                            currentCashItem.Amount = 0;
+                        lstItemsToRemove.Add(currentCashExpense);
                     }
-                    lstItemsToRemove.Add(currentCashItem);
-                    if (cashWithdrawalItem.Amount >= 0)
+                    // We consumed all the cash we had from previous period.
+                    if (item.Amount == 0)
                     {
-                        carryCashExpenses = cashWithdrawalItem.Amount.Value;
-                        cashWithdrawalItem.Amount = 0;
                         break;
                     }
                 }
+                foreach (var itemToRemove in lstItemsToRemove)
+                {
+                    cashSpent.Remove(itemToRemove);
+                }
+                if (item.Amount > 0)
+                {
+                    cashLeftToSpend += item.Amount.Value;
+                }
+            }
+            lstItemsToRemove.Clear();
+
+            foreach (var cashWithdrawalItem in cashWithdrawal)
+            {
+                // We want to take in account only the cash spent after we withdraw the money.
+                var currentCashItems = cashSpent.Where(x => x.Date >= cashWithdrawalItem.Date).OrderBy(x => x.Date);
+                if (currentCashItems.Any()) cashWithdrawalItem.Note += $" (Original amount {cashWithdrawalItem.Amount})";
+                
+                // We want to parse all cash expenses (from current period).
+                foreach (var currentCashItem in currentCashItems)
+                {
+                    // Always add the amount; the Cash could be negative (we spent) or it also could be positive (we earned it).
+                    decimal creditToSubtract = 0;
+                    creditToSubtract = Math.Abs(Math.Max(cashWithdrawalItem.Amount.Value, currentCashItem.Amount.Value));
+                    currentCashItem.Amount += creditToSubtract;
+                    // NOTE: A Cash withdrawal CANNOT NEVER BE a negative amount.
+                    cashWithdrawalItem.Amount += creditToSubtract;
+
+                    if (currentCashItem.Amount == 0)
+                    {
+                        lstItemsToRemove.Add(currentCashItem);
+                    }
+
+                    // If the cash covered the withdrawal we're going to set to zero the withdrawal.
+                    if (cashWithdrawalItem.Amount >= 0)
+                    {
+                        carryCashExpenses = cashWithdrawalItem.Amount.Value;
+                        cashWithdrawalItem.Amount = 0;                        
+                        break;
+                    }
+                }
+
                 foreach (var item in lstItemsToRemove)
                 {
-                    cashItems.Remove(item);
+                    cashSpent.Remove(item);
                 }
                 if (cashWithdrawalItem.Amount < 0)
                 {
-                    cashLeftToSpend += cashWithdrawalItem.Amount.Value;
+                    cashLeftToSpend += Math.Abs(cashWithdrawalItem.Amount.Value);
+                }
+                else
+                {
+                    cashLeftToSpend += carryCashExpenses;
                 }
             }
+
+            // NOTE: these are for debugging purposes. The 'c' must be equals to our function result ('cashLeftToSpend').
+            var a = cashEarned.Select(x => x.Amount).Sum();
+            var b = cashWithdrawal.Select(x => x.Amount).Sum() ?? 0;
+            var c = a + Math.Abs(b);            
+
             return cashLeftToSpend;
         }
 
-        public async Task<IEnumerable<MaterializedMoneyItem>> CalculateAsync(DateTime? from, DateTime? to, DateTime? stopToDate, bool onlyInstallment = false, bool includeLastEndPeriod = true)
+        public async Task<IEnumerable<MaterializedMoneyItem>> CalculateAsync(int? accountId, DateTime? from, DateTime? to, DateTime? stopToDate, 
+            bool onlyInstallment = false, bool includeLastEndPeriod = true)
         {
-            if (to == null) to = new DateTime(9999, 12, 31);
+            if (to == null) to = new DateTime(DateTime.Now.Year, 12, 31);
             var res = new List<MaterializedMoneyItem>();
             var lastEndPeriod = context.MaterializedMoneyItems.Where(x => x.EndPeriod).OrderByDescending(x => x.Date).FirstOrDefault();
             if (lastEndPeriod != null && includeLastEndPeriod)
@@ -97,35 +158,56 @@ namespace Savings.API.Services
             var config = context.Configuration.FirstOrDefault() ?? throw new Exception("Unable to find the configuration");
             DateTime periodEnd;
             bool endPeriodCashCarryUsed = false;
+            decimal cashLeftToSpend = 0;
 
             while ((periodEnd = CalculateNextAccountingPeriod(periodStart, config.EndPeriodRecurrencyType, config.EndPeriodRecurrencyInterval).AddDays(-1)) <= to || periodStart < to)
             {
                 int accumulatorStartingIndex = res.Count;
-                
+
+                decimal? periodIncome = 0;
+                decimal? periodOutcome = 0;
+
                 // TODO: Ma a che serve l'AccumulateForBudget? Non mi basta semplicemente prelevare in Cash?
                 //       Forse e' come il Salvadanaio in IntesaSanPaolo? Che non viene scritto da nessuna parte che e' finito in un altro 'cassetto'.
                 //       EDIT: A riga 197 si fa menzione di un PeriodicBudget che serve a sottrarre l'AccumulateForBudget. Mhhh.
                 var fixedItemsNotAccumulate = await context.FixedMoneyItems
                                                     .Include(x => x.Category)
+                                                    .Where(x => accountId.HasValue ? x.AccountID == accountId : true)
                                                     .Where(x => x.Date >= periodStart && x.Date <= periodEnd)
                                                     .AsNoTracking().ToListAsync();
                 
                 // TODO: Investigare sul come trasformare questa query per poter eliminare gli Adjustements.
                 var recurrentItems = await context.RecurrentMoneyItems
                                                     .Include(x => x.Adjustements).Include(x => x.AssociatedItems).Include(x => x.Category)
+                                                    .Where(x => accountId.HasValue ? x.MoneyAccountId == accountId : true)
                                                     .Where(x => (x.StartDate <= periodEnd && (!x.EndDate.HasValue || periodStart <= x.EndDate) && x.RecurrentMoneyItemID == null) ||
                                                                 (x.Adjustements.Count() > 0 && x.Adjustements.First().RecurrencyNewDate.HasValue && x.Adjustements.First().RecurrencyNewDate.Value >= periodStart && x.Adjustements.First().RecurrencyNewDate.Value <= periodEnd))
                                                     .AsNoTracking().ToListAsync();
 
                 if (onlyInstallment) recurrentItems = recurrentItems.Where(x => x.Type == MoneyType.InstallmentPayment).ToList();
 
+                // Determines how much Cash we've left from previous period.
                 decimal additionalCash = 0;
                 if (!endPeriodCashCarryUsed)
                 {
                     endPeriodCashCarryUsed = true;
                     additionalCash = lastEndPeriod?.EndPeriodCashCarry ?? 0;
                 }
-                var cashLeftToSpend = CalculateCash(fixedItemsNotAccumulate, config, additionalCash, periodStart);
+                else
+                {
+                    additionalCash = cashLeftToSpend;
+                }
+
+                // Before applying cash modifications, we want to know which is the real amount of spent and income.
+                periodIncome += fixedItemsNotAccumulate
+                    .Where(x => x.Amount > 0)
+                    .Sum(x => x.Amount);
+
+                periodOutcome += fixedItemsNotAccumulate
+                    .Where(x => x.Amount < 0)
+                    .Sum(x => x.Amount);
+
+                cashLeftToSpend = CalculateCash(fixedItemsNotAccumulate, config, additionalCash, periodStart);
 
                 //********************************  Calculation 1: Fixed items to not accumulate
                 foreach (var fixedItem in fixedItemsNotAccumulate)
@@ -145,7 +227,8 @@ namespace Savings.API.Services
                     });
                 }
 
-                //********************************  Calculation 3: Recurrent items 
+                //********************************  Calculation 2: Recurrent items 
+                var tmpIndex = res.Count;
                 foreach (var recurrentItem in recurrentItems)
                 {
                     var installments = CalculateInstallmentInPeriod(recurrentItem, periodStart, periodEnd);
@@ -211,27 +294,19 @@ namespace Savings.API.Services
                     }
                 }
 
-                //********************************  Calculation 4: End Period item
-
-                // TODO: Questo serve ad evitare che alcune Categorie vengano conteggiate.
-                //       Ma una volta che avrò la gestione con i MoneyAccounts potrò escludere i singoli MoneyAccount dal conteggio.
-                //       Un MoneyAccount sarà ad esempio 'Conto Trading Fineco'; cosi da non dover percepire gli accrediti fatti sul conto
-                //       come un guadagno - che non sono in quanto non sono nient'altro che uno spostamento da un MoneyAccount ad un altro MoneyAccount.
-                var excludeAction = (MaterializedMoneyItem item) => context.MaterializedMoneyRules
-                    .Any(x => (x.Type == ItemType.Category && x.RelatedID == item.CategoryID) && x.Exclude == true);
-
-                var periodIncome = res.GetRange(accumulatorStartingIndex, res.Count - accumulatorStartingIndex)
+                // After we applied the Recurrent items we want to add the income\outcome
+                periodIncome += res.GetRange(tmpIndex, res.Count - tmpIndex)
                     .Where(x => x.Amount > 0)
-                    .Where(x => !excludeAction(x))
                     .Sum(x => x.Amount);
 
-                var periodOutcome = res.GetRange(accumulatorStartingIndex, res.Count - accumulatorStartingIndex)
+                periodOutcome += res.GetRange(tmpIndex, res.Count - tmpIndex)
                     .Where(x => x.Amount < 0)
-                    .Where(x => !excludeAction(x))
                     .Sum(x => x.Amount);
+
+                //********************************  Calculation 3: End Period item
 
                 res.Add(new MaterializedMoneyItem {
-                    Amount = res.GetRange(accumulatorStartingIndex, res.Count - accumulatorStartingIndex).Sum(x => x.Amount), 
+                    Amount = res.GetRange(accumulatorStartingIndex, res.Count - accumulatorStartingIndex).Sum(x => x.Amount),
                     Note = $"💵 Cash: {cashLeftToSpend:N2} | Income: {periodIncome} | Outcome: {periodOutcome}", 
                     Date = periodEnd, 
                     EndPeriod = true, 

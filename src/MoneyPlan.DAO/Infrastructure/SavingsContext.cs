@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MoneyPlan.DAO.Mapping;
 using Savings.DAO.Mapping;
 using Savings.Model;
 using System;
@@ -14,12 +15,13 @@ namespace Savings.DAO.Infrastructure
         {
             base.OnConfiguring(optionsBuilder);
         }
-        
-        
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration<MoneyCategory>(new MoneyCategoryConfiguration());
+            modelBuilder.ApplyConfiguration<MoneyAccount>(new MoneyAccountConfiguration());
 
             modelBuilder.Entity<Configuration>().HasData(
                 new Configuration { ID = 1, EndPeriodRecurrencyInterval = 1, EndPeriodRecurrencyType = RecurrencyType.Month }
@@ -57,7 +59,7 @@ namespace Savings.DAO.Infrastructure
 
                new MoneyCategory { ID = 7, Description = "Other" },
                     // NOTE: Assicurazioni sulla casa, sulla vita
-                    new MoneyCategory { ID = 30, Description = "Insurances & Policies", ParentId = 7},
+                    new MoneyCategory { ID = 30, Description = "Insurances & Policies", ParentId = 7 },
                     // NOTE: Usato per imposte di bollo, commissioni bancarie, etc
                     new MoneyCategory { ID = 31, Description = "Duties", ParentId = 7 },
 
@@ -79,12 +81,7 @@ namespace Savings.DAO.Infrastructure
         public DbSet<Configuration> Configuration { get; set; }
         public DbSet<RecurrencyAdjustement> RecurrencyAdjustements { get; set; }
 
-        // TODO: Creare il silos per gestirlo.
-        public List<MaterializedMoneyRule> MaterializedMoneyRules => new List<MaterializedMoneyRule>()
-        {
-            // NOTE: Regola per la MoneyCategory 'Conto Fineco'
-            new MaterializedMoneyRule() { ID = 1, Exclude = true, Type = ItemType.Category, RelatedID = 41 }
-        };
+        public DbSet<MoneyAccount> MoneyAccounts { get; set; }
 
     }
 }

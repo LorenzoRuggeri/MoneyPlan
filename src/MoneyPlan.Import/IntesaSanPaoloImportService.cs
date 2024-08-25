@@ -55,6 +55,7 @@ namespace Savings.Import
                     //       il categoryValue, almeno cerchiamo di risalire a posteriori durante la fase di editing.
                     var itemtoAdd = new FixedMoneyItem()
                     {
+                        AccountID = 1,  // Main Account (Intesa San Paolo)
                         Cash = false,
                         Date = dateValue.GetValue<DateTime>(),
                         Category = MapCategory(categoryValue.GetValue<string>()),

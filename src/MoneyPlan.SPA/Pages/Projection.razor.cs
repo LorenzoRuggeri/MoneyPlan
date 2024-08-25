@@ -14,6 +14,10 @@ namespace MoneyPlan.SPA.Pages
         [Inject]
         public ISavingsApi savingsAPI { get; set; }
 
+        [Inject]
+        public Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
+
         private MaterializedMoneyItem[] materializedMoneyItems;
 
         [Inject]
@@ -23,13 +27,19 @@ namespace MoneyPlan.SPA.Pages
 
         public DateTime? FilterDateTo { get; set; }
 
+        public int? FilterAccount { get; set; } = null;
+
         public Configuration CurrentConfiguration { get; set; }
+
+        public IEnumerable<MoneyAccount> Accounts { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
-            FilterDateTo = DateTime.Now.Date.AddYears(1);
+            FilterDateTo = DateTime.Now.Date.AddMonths(6);
+            FilterAccount = await localStorage.GetItemAsync<int?>("Search.AccountId") ?? null;
             await InitializeList();
             CurrentConfiguration = (await savingsAPI.GetConfigurations()).FirstOrDefault();
+            Accounts = await savingsAPI.GetMoneyAccounts();
         }
 
 
@@ -39,8 +49,9 @@ namespace MoneyPlan.SPA.Pages
             StateHasChanged();
         }
 
-        async void Zero_Changed()
+        async void OnAccountChanged(object accountId)
         {
+            await localStorage.SetItemAsync("Search.AccountId", FilterAccount);
             await InitializeList();
             StateHasChanged();
         }
@@ -51,10 +62,9 @@ namespace MoneyPlan.SPA.Pages
             StateHasChanged();
         }
 
-
         async Task InitializeList()
         {
-            materializedMoneyItems = await savingsAPI.GetSavings(null, FilterDateTo);
+            materializedMoneyItems = await savingsAPI.GetSavings(FilterAccount, null, FilterDateTo);
 
             if (!ShowPastItems)
             {
@@ -80,7 +90,10 @@ namespace MoneyPlan.SPA.Pages
         {
             if (item.EndPeriod) return;
             if (!item.FixedMoneyItemID.HasValue) return;
+
+            // We want the original item, not the one that has been projected.
             var itemToEdit = await savingsAPI.GetixedMoneyItem(item.FixedMoneyItemID.Value);
+
             bool? res = await dialogService.OpenAsync<FixedItemEdit>($"Edit item",
                              new Dictionary<string, object>() { { "fixedItemToEdit", itemToEdit }, { "isNew", false } },
                              new DialogOptions() { Width = "600px" });
@@ -93,7 +106,16 @@ namespace MoneyPlan.SPA.Pages
 
         async Task SaveMaterializedHistory(DateTime date)
         {
-            var res = await dialogService.Confirm($"Do you want to save the projection to the history until {date:dd/MM/yyyy}?", "Save the history", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
+            string dialogMessage = string.Empty;
+            if (FilterAccount.HasValue)
+            {
+                dialogMessage += "Projection will be saved for all accounts. You're viewing only a partial projecton." + "<br>";
+            }
+            dialogMessage += $"Do you want to save the projection to the history until {date:dd/MM/yyyy}?";
+            
+            var res = await dialogService.Confirm(dialogMessage, 
+                "Save the history", 
+                new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
             if (res.HasValue && res.Value)
             {
                 await savingsAPI.PostSavingsToHistory(date);

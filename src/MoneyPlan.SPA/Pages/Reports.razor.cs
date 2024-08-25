@@ -18,6 +18,9 @@ namespace MoneyPlan.SPA.Pages
         [Inject]
         public DialogService dialogService { get; set; }
 
+        [Inject]
+        public Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
         private RecurrentMoneyItem[] RecurrentItems { get; set; }
 
         private MaterializedMoneyItem[] Projections { get; set; }
@@ -25,14 +28,19 @@ namespace MoneyPlan.SPA.Pages
         public string FilterCategoryGroupByPeriod { get; set; } = "yy/MM";
 
         public DateTime FilterDateFrom { get; set; }
-
+        
         public DateTime FilterDateTo { get; set; }
+
+        public int? FilterAccount { get; set; }
+
+        public MoneyAccount[] Accounts { get; private set; }
 
         ReportCategory[] statistics;
 
         async void DateTimeDateChanged(DateTime? value, string name)
         {
             await InitializeCategoryResume();
+            await InitializeInstallmentResume();
             StateHasChanged();
         }
 
@@ -42,6 +50,15 @@ namespace MoneyPlan.SPA.Pages
             FilterCategoryGroupByPeriod = string.IsNullOrWhiteSpace(selectedString) ? null : selectedString;
 
             await InitializeCategoryResume();
+            await InitializeInstallmentResume();
+            StateHasChanged();
+        }
+
+        async void AccountChanged(object model)
+        {
+            await localStorage.SetItemAsync("Search.AccountId", FilterAccount);
+            await InitializeCategoryResume();
+            await InitializeInstallmentResume();
             StateHasChanged();
         }
 
@@ -50,6 +67,9 @@ namespace MoneyPlan.SPA.Pages
             var today = DateTime.Now;
             FilterDateTo = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
             FilterDateFrom = FilterDateTo.AddYears(-1);
+            FilterAccount = await localStorage.GetItemAsync<int?>("Search.AccountId") ?? null;
+
+            Accounts = await savingsAPI.GetMoneyAccounts();
 
             await InitializeInstallmentResume();
             await InitializeCategoryResume();
@@ -57,26 +77,27 @@ namespace MoneyPlan.SPA.Pages
 
         async Task InitializeInstallmentResume()
         {
-            var recurrentItems = await savingsAPI.GetRecurrentMoneyItems(null, true, null, null);
+            var recurrentItems = await savingsAPI.GetRecurrentMoneyItems(FilterAccount, null, true, null, null);
             RecurrentItems = recurrentItems.Where(x => x.EndDate.HasValue && x.EndDate.Value >= DateTime.Now && x.Type == MoneyType.InstallmentPayment).OrderBy(x => x.Note).ToArray();
             DateTime endDate = DateTime.Now.AddMonths(1);
             if (RecurrentItems.Any())
             {
                 endDate = RecurrentItems.Max(x => x.EndDate.Value);
             }
-            var projections = await savingsAPI.GetSavings(null, endDate, true);
+            var projections = await savingsAPI.GetSavings(FilterAccount, null, endDate, true);
             Projections = projections.Where(x => x.RecurrentMoneyItemID.HasValue && x.Amount != 0 && x.Date >= DateTime.Now).ToArray();
         }
 
         async Task InitializeCategoryResume()
         {
-            statistics = await savingsAPI.GetCategoryResume(FilterCategoryGroupByPeriod, FilterDateFrom, FilterDateTo);
+            statistics = await savingsAPI.GetCategoryResume(FilterAccount, FilterCategoryGroupByPeriod, FilterDateFrom, FilterDateTo);
         }
 
         async Task OpenDetails(long? category, string period)
         {
             var res = await dialogService.OpenAsync<ReportsDetail>($"Report details",
                            new Dictionary<string, object>() {
+                               { "account", FilterAccount },
                                { "FilterDateFrom", FilterDateFrom },
                                { "FilterDateTo", FilterDateTo },
                                { "category", (long?)category },

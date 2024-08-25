@@ -24,6 +24,10 @@ namespace Savings.Model
 
         // TODO: Questo e' correlato ad AssociatedItems.
         public long? RecurrentMoneyItemID { get; set; }
+
+        public int? MoneyAccountId { get; set; }
+
+        public virtual MoneyAccount MoneyAccount { get; set; }
     }
 
 

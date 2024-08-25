@@ -12,5 +12,9 @@ namespace Savings.Model
     {
         public int ID { get; set; }
         public string Name { get; set; }
+
+        public virtual List<FixedMoneyItem> FixedMoneyItems { get; set; }
+
+        public virtual List<RecurrentMoneyItem> RecurrentMoneyItems { get; set; }
     }
 }

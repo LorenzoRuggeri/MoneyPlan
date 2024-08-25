@@ -10,6 +10,14 @@ else
     <h2>Categories</h2>
     <div class="form-row">
         <div class="col-md-3 col">
+            <label>Account:</label>
+            <div>
+                <RadzenDropDown TValue="int?" @bind-Value="@FilterAccount" Data="@Accounts"
+                                TextProperty="Name" ValueProperty="ID" AllowClear="true" Placeholder="All accounts"
+                                Change="AccountChanged" />
+            </div>
+        </div>
+        <div class="col-md-3 col">
             <label>From:</label><br />
             <RadzenDatePicker @bind-Value="FilterDateFrom" DateFormat="dd/MM/yyyy" Change="@(args => DateTimeDateChanged(args, nameof(FilterDateFrom)))" />
         </div>
@@ -17,7 +25,7 @@ else
             <label>To:</label><br />
             <RadzenDatePicker @bind-Value="FilterDateTo" DateFormat="dd/MM/yyyy" Change="@(args => DateTimeDateChanged(args, nameof(FilterDateTo)))" />
         </div>
-        <div class="col-md-6 col">
+        <div class="col-md-3 col">
             <label>Group by:</label>
             <select class="form-control" @onchange="FilterGroupByCategoryPeriodChanged">
                 <option value="yy/MM" selected="@("yy/MM" == FilterCategoryGroupByPeriod)">Month</option>
@@ -72,6 +80,7 @@ else
             </div>
         </div>
     </div>
+
     <h2>Installments Resume</h2>
     <div class="row">
         @for (int i = 0; i < RecurrentItems.Length; i++)

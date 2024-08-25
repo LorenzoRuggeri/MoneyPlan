@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Savings.DAO.Infrastructure;
 
@@ -10,9 +11,11 @@ using Savings.DAO.Infrastructure;
 namespace Savings.DAO.Migrations
 {
     [DbContext(typeof(SavingsContext))]
-    partial class SavingsContextModelSnapshot : ModelSnapshot
+    [Migration("20240821212803_AddedMoneyAccountTable")]
+    partial class AddedMoneyAccountTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -399,9 +402,6 @@ namespace Savings.DAO.Migrations
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("MoneyAccountId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Note")
                         .HasColumnType("TEXT");
 
@@ -429,8 +429,6 @@ namespace Savings.DAO.Migrations
                     b.HasKey("ID");
 
                     b.HasIndex("CategoryID");
-
-                    b.HasIndex("MoneyAccountId");
 
                     b.HasIndex("RecurrentMoneyItemID");
 
@@ -500,17 +498,11 @@ namespace Savings.DAO.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryID");
 
-                    b.HasOne("Savings.Model.MoneyAccount", "MoneyAccount")
-                        .WithMany("RecurrentMoneyItems")
-                        .HasForeignKey("MoneyAccountId");
-
                     b.HasOne("Savings.Model.RecurrentMoneyItem", null)
                         .WithMany("AssociatedItems")
                         .HasForeignKey("RecurrentMoneyItemID");
 
                     b.Navigation("Category");
-
-                    b.Navigation("MoneyAccount");
                 });
 
             modelBuilder.Entity("Savings.Model.MaterializedMoneyItem", b =>
@@ -521,8 +513,6 @@ namespace Savings.DAO.Migrations
             modelBuilder.Entity("Savings.Model.MoneyAccount", b =>
                 {
                     b.Navigation("FixedMoneyItems");
-
-                    b.Navigation("RecurrentMoneyItems");
                 });
 
             modelBuilder.Entity("Savings.Model.MoneyCategory", b =>

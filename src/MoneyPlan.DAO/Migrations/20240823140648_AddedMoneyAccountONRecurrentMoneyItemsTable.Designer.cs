@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Savings.DAO.Infrastructure;
 
@@ -10,9 +11,11 @@ using Savings.DAO.Infrastructure;
 namespace Savings.DAO.Migrations
 {
     [DbContext(typeof(SavingsContext))]
-    partial class SavingsContextModelSnapshot : ModelSnapshot
+    [Migration("20240823140648_AddedMoneyAccountONRecurrentMoneyItemsTable")]
+    partial class AddedMoneyAccountONRecurrentMoneyItemsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");

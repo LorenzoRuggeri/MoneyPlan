@@ -17,6 +17,9 @@ namespace MoneyPlan.SPA.Pages
         [Inject]
         public NotificationService notificationService { get; set; }
 
+        [Inject]
+        public Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
+
 
         private RecurrentMoneyItem[] recurrentMoneyItems;
 
@@ -29,6 +32,9 @@ namespace MoneyPlan.SPA.Pages
         public bool ShowOnlyActive { get; set; } = true;
         public DateTime? FilterOnlyActiveDateFrom { get; set; }
         public DateTime? FilterOnlyActiveDateTo { get; set; }
+        public int? FilterAccount { get; set; } = null;
+
+        public IEnumerable<MoneyAccount> Accounts { get; set; }
 
         async Task ShowOnlyActiveOnChange()
         {
@@ -42,14 +48,23 @@ namespace MoneyPlan.SPA.Pages
             StateHasChanged();
         }
 
+        async void OnAccountChanged(object accountId)
+        {
+            await localStorage.SetItemAsync("Search.AccountId", FilterAccount);
+            await InitializeList();
+            StateHasChanged();
+        }
+
         protected override async Task OnInitializedAsync()
         {
+            Accounts = await savingsAPI.GetMoneyAccounts();
+            FilterAccount = await localStorage.GetItemAsync<int?>("Search.AccountId") ?? null;
             await InitializeList();
         }
 
         async Task InitializeList()
         {
-            recurrentMoneyItems = await savingsAPI.GetRecurrentMoneyItems(parentItemID, ShowOnlyActive, FilterOnlyActiveDateFrom, FilterOnlyActiveDateTo);
+            recurrentMoneyItems = await savingsAPI.GetRecurrentMoneyItems(FilterAccount, parentItemID, ShowOnlyActive, FilterOnlyActiveDateFrom, FilterOnlyActiveDateTo);
         }
 
 

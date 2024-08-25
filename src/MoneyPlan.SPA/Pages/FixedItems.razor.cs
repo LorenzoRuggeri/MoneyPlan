@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace MoneyPlan.SPA.Pages
 {
@@ -39,13 +40,19 @@ namespace MoneyPlan.SPA.Pages
         /// </summary>
         public bool FilterInvalid { get; set; }
 
+        public int? FilterAccount { get; set; } = null;
+
         public MoneyCategory[] Categories { get; set; }
+
+        public IEnumerable<MoneyAccount> Accounts { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
             FilterDateFrom = await localStorage.GetItemAsync<DateTime?>("FixedItems.FilterDateFrom") ?? DateTime.Now.Date.AddMonths(-2);
             FilterDateTo = await localStorage.GetItemAsync<DateTime?>("FixedItems.FilterDateTo") ?? DateTime.Now.Date.AddDays(15);
+            FilterAccount = await localStorage.GetItemAsync<int?>("Search.AccountId") ?? null;
             Categories = await savingsAPI.GetMoneyCategories();
+            Accounts = await savingsAPI.GetMoneyAccounts();
             CurrentConfiguration = (await savingsAPI.GetConfigurations()).FirstOrDefault();
             await InitializeList();
         }
@@ -96,6 +103,12 @@ namespace MoneyPlan.SPA.Pages
             StateHasChanged();
         }
 
+        async void OnAccountChanged(object accountId)
+        {
+            await localStorage.SetItemAsync("Search.AccountId", FilterAccount);
+            await InitializeList();
+            StateHasChanged();
+        }
 
         async Task InitializeList()
         {
@@ -109,6 +122,10 @@ namespace MoneyPlan.SPA.Pages
             {
                 results = FilterByNotes(results).ToArray();
             }
+            if (FilterAccount != null)
+            {
+                results = results.Where(x => x.AccountID == FilterAccount).ToArray();
+            }
 
             fixedMoneyItems = results;
         }
@@ -117,7 +134,11 @@ namespace MoneyPlan.SPA.Pages
         async Task AddNew()
         {
             bool? res = await dialogService.OpenAsync<FixedItemEdit>($"Add new",
-                         new Dictionary<string, object>() { { "fixedItemToEdit", new Savings.Model.FixedMoneyItem() }, { "isNew", true } },
+                         new Dictionary<string, object>() { 
+                             { "fixedItemToEdit", new Savings.Model.FixedMoneyItem() }, 
+                             { "isNew", true },
+                             { "AccountID", FilterAccount }
+                         },
                          new DialogOptions() { Width = "600px", Draggable = true });
             if (res.HasValue && res.Value)
             {
@@ -130,8 +151,12 @@ namespace MoneyPlan.SPA.Pages
         async Task Edit(FixedMoneyItem item)
         {
             bool? res = await dialogService.OpenAsync<FixedItemEdit>($"Edit item",
-                             new Dictionary<string, object>() { { "fixedItemToEdit", item }, { "isNew", false } },
-                             new DialogOptions() { Width = "600px" });
+                             new Dictionary<string, object>() {
+                                 { "fixedItemToEdit", item.Clone() },
+                                 { "isNew", false },
+                                 { "AccountID", FilterAccount }
+                             },
+                             new DialogOptions() { Width = "600px", });
             if (res.HasValue && res.Value)
             {
                 await InitializeList();

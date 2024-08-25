@@ -23,6 +23,7 @@ namespace Savings.API.Controllers
         }
 
         // GET: api/MoneyCategories
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, NoStore = false)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MoneyCategory>>> GetMoneyCategories()
         {

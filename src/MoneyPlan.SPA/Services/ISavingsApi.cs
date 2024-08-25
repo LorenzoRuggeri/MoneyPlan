@@ -8,7 +8,7 @@ namespace MoneyPlan.SPA.Services
     public interface ISavingsApi
     {
         [Get("/api/Savings")]
-        Task<MaterializedMoneyItem[]> GetSavings(DateTime? from, DateTime? to, bool onlyInstallment = false);
+        Task<MaterializedMoneyItem[]> GetSavings(int? accountId, DateTime? from, DateTime? to, bool onlyInstallment = false);
 
         [Get("/api/FixedMoneyItems")]
         Task<FixedMoneyItem[]> GetFixedMoneyItems(DateTime? from, DateTime? to, bool excludeWithdrawal, long? filterCategory);
@@ -29,7 +29,7 @@ namespace MoneyPlan.SPA.Services
         Task EditFixedMoneyItem(long id, FixedMoneyItem fixedMoneyItem);
 
         [Get("/api/RecurrentMoneyItems")]
-        Task<RecurrentMoneyItem[]> GetRecurrentMoneyItems(long? parentItemID, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo);
+        Task<RecurrentMoneyItem[]> GetRecurrentMoneyItems(int? accountId, long? parentItemID, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo);
 
         [Delete("/api/RecurrentMoneyItems/{id}")]
         Task<RecurrentMoneyItem> DeleteRecurrentMoneyItem(long id);
@@ -80,12 +80,15 @@ namespace MoneyPlan.SPA.Services
         Task PutConfiguration(long id, Configuration configuration);
 
         [Get("/api/Report/GetCategoryResume")]
-        Task<ReportCategory[]> GetCategoryResume(string periodPattern, DateTime dateFrom, DateTime dateTo);
+        Task<ReportCategory[]> GetCategoryResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo);
 
         [Get("/api/Report/GetCategoryResumeDetail")]
-        Task<ReportDetail[]> GetCategoryResumeDetail(string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period);
+        Task<ReportDetail[]> GetCategoryResumeDetail(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period);
 
         [Put("/api/Import/ImportFromFile")]
         Task ImportFromfile();
+
+        [Get("/api/MoneyAccounts")]
+        Task<MoneyAccount[]> GetMoneyAccounts();
     }
 }

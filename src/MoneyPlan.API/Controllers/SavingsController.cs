@@ -21,13 +21,13 @@ namespace Savings.API.Controllers
 
         // GET: api/Savings
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MaterializedMoneyItem>>> GetSavings(DateTime? from, DateTime? to, bool onlyInstallment = false)
+        // TODO: Controllare bene il parametro 'onlyInstallment' perche' e' passato al posto di un altro parametro.
+        public async Task<ActionResult<IEnumerable<MaterializedMoneyItem>>> GetSavings(int? accountId, DateTime? from, DateTime? to, bool onlyInstallment = false)
         {
             // TODO: rimuovere la riga sotto che forza il parametro 'from' e vedere se metterlo nella UI o nella Configurazione.
-            from = from ?? new DateTime(2023, 1, 1);
-            var result = await calculator.CalculateAsync(from, to, null, onlyInstallment);
+            from = from ?? new DateTime(2022, 1, 1);
+            var result = await calculator.CalculateAsync(accountId, from, to, null, onlyInstallment);
             return Ok(result);
-            //return (List<MaterializedMoneyItem>)await calculator.CalculateAsync(from, to, null, onlyInstallment);
         }
 
 

@@ -28,7 +28,7 @@ namespace Savings.API.Controllers
         [HttpPut("ImportFromFile")]
         public async Task<ActionResult> ImportFromfile()
         {
-            importService.Import("Data\\lista_completa_20082024.xlsx");
+            importService.Import("Data\\lista_completa_25082024.xlsx");
 
             await Task.CompletedTask;
             return Ok();

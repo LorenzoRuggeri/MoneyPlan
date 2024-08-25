@@ -25,6 +25,9 @@ namespace MoneyPlan.SPA.Pages
         [Parameter]
         public string period { get; set; } = null;
 
+        [Parameter]
+        public int? account { get; set; } = null;
+
         public ReportDetail[]  ReportCategoryDetails { get; set; }
 
         protected override async Task OnInitializedAsync()
@@ -34,7 +37,7 @@ namespace MoneyPlan.SPA.Pages
 
         async Task InitializeList()
         {
-            ReportCategoryDetails = await savingsAPI.GetCategoryResumeDetail(periodPattern, FilterDateFrom, FilterDateTo, category, period);
+            ReportCategoryDetails = await savingsAPI.GetCategoryResumeDetail(account, periodPattern, FilterDateFrom, FilterDateTo, category, period);
         }
 
     }
