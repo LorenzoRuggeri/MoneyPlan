@@ -101,20 +101,11 @@ namespace Savings.API.Controllers
             var projectionItems = await calculator.CalculateAsync(accountId, null, dateTo, null, false);
             var withdrawalID = _context.Configuration.FirstOrDefault()?.CashWithdrawalCategoryID;
 
-
-            Expression<Func<MaterializedMoneyItem, bool>> firstLevelPredicate = (x) => x.Date >= dateFrom && x.Date <= dateTo && x.CategoryID != withdrawalID && !x.EndPeriod && x.Subitems.Count() == 0;
-            Expression<Func<MaterializedMoneyItem, bool>> secondLevelPredicate = (x) => x.Date >= dateFrom && x.Date <= dateTo && x.CategoryID != withdrawalID && !x.EndPeriod && x.Subitems.Count() > 0;
-            Expression<Func<ReportFullDetail, bool>> subItemPredicate = (x) => x.Date >= dateFrom && x.Date <= dateTo && x.CategoryID != withdrawalID;
+            Expression<Func<MaterializedMoneyItem, bool>> firstLevelPredicate = (x) => x.Date >= dateFrom && x.Date <= dateTo && x.CategoryID != withdrawalID && !x.EndPeriod;
 
             var projectionItemsFirstLevel = projectionItems
                 .Where(firstLevelPredicate.Compile())
                 .Select(x => new ReportFullDetail { Type = "ProjL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
-                .ToList();
-
-            var projectionItemsSecondLevel = projectionItems
-                .Where(secondLevelPredicate.Compile())
-                .SelectMany(x => x.Subitems, (x, subitem) => new ReportFullDetail { Type = "ProjL2", ID = subitem.ID, Date = subitem.Date, Period = subitem.Date.ToString(periodPattern), Description = subitem.Note, CategoryID = subitem.CategoryID, Amount = subitem.Amount })
-                .Where(subItemPredicate.Compile())
                 .ToList();
 
             var materializedItemsFirstLevel = await _context.MaterializedMoneyItems
@@ -130,20 +121,7 @@ namespace Savings.API.Controllers
                 .Select(x => new ReportFullDetail { Type = "MaterL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
                 .ToListAsync();
 
-            var materializedItemsSecondLevel = await _context.MaterializedMoneyItems
-                .Include(x => x.Category)
-                .Include(x => x.RecurrentMoneyItem)
-                .Include(x => x.FixedMoneyItem)
-                .Where(x => accountId.HasValue ?
-                    (x.FixedMoneyItemID.HasValue ? x.FixedMoneyItem.AccountID == accountId : true ||
-                    x.RecurrentMoneyItemID.HasValue ? x.RecurrentMoneyItem.MoneyAccountId == accountId : true) :
-                true)
-                .Where(secondLevelPredicate)
-                .SelectMany(x => x.Subitems, (moneyItem, subitem) => new ReportFullDetail { Type = "MaterL2", ID = subitem.ID, Date = subitem.Date, Period = subitem.Date.ToString(periodPattern), Description = subitem.Note, CategoryID = subitem.CategoryID, Amount = subitem.Amount })
-                .Where(subItemPredicate)
-                .ToListAsync();
-
-            var union = projectionItemsFirstLevel.Union(projectionItemsSecondLevel).Union(materializedItemsFirstLevel).Union(materializedItemsSecondLevel);
+            var union = projectionItemsFirstLevel.Union(materializedItemsFirstLevel);
             return union;
         }
     }

@@ -134,7 +134,6 @@ namespace Savings.API.Controllers
             var previous = await _context.MaterializedMoneyItems.Where(x => x.EndPeriod && x.Date < materializedMoneyItem.Date).OrderByDescending(x => x.Date).FirstOrDefaultAsync();
             if (previous != null)
             {
-                await _context.MaterializedMoneyItems.Where(x => x.Date > previous.Date).SelectMany(x => x.Subitems).ExecuteDeleteAsync();
                 await _context.MaterializedMoneyItems.Where(x => x.Date > previous.Date).ExecuteDeleteAsync();
             }
             return Ok();

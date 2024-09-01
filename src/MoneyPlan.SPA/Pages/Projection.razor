@@ -46,7 +46,8 @@ else
             <tbody>
                 @foreach (var item in materializedMoneyItems)
                 {
-                    <tr class="@(item.EndPeriod ? "end-period" : "") item-action" @onclick="@(()=>  item.IsRecurrent ? AdjustRecurrency(item) : AdjustFixedItem(item))">
+                    <tr class="@(item.EndPeriod ? "end-period" : "") item-action" 
+                        @onclick="@(()=> item.IsRecurrent==false ? AdjustFixedItem(item) : Task.CompletedTask)">
                         <td class="text-center">
                             @if (item.Date <= DateTime.Now.Date)
                             {

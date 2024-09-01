@@ -28,12 +28,6 @@ namespace MoneyPlan.SPA.Pages
         [Parameter]
         public bool isNew { get; set; }
 
-        [Parameter]
-        public long? parentItemID { get; set; } = null;
-
-        [Parameter]
-        public RecurrentMoneyItem parentItem { get; set; } = null;
-
         InputNumber<decimal> amountInputNumber;
 
         protected override async void OnAfterRender(bool firstRender)
@@ -50,16 +44,7 @@ namespace MoneyPlan.SPA.Pages
             if (isNew)
             {
                 this.recurrentItemToEdit.StartDate = DateTime.Now.Date;
-                if (parentItemID.HasValue)
-                {
-                    DateTime targetDate = DateTime.Now.AddMonths(1);
-                    targetDate = new DateTime(targetDate.Year, targetDate.Month, parentItem.StartDate.Day);
-
-                    recurrentItemToEdit.StartDate = targetDate;
-                    recurrentItemToEdit.EndDate = targetDate;
-                }
             }
-            recurrentItemToEdit.RecurrentMoneyItemID = parentItemID;
         }
 
         protected override async Task OnInitializedAsync()

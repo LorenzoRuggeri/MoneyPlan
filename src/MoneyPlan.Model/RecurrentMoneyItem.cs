@@ -17,13 +17,7 @@ namespace Savings.Model
         public MoneyType Type { get; set; }
         public MoneyCategory Category { get; set; }
         public long? CategoryID { get; set; }
-        public virtual IEnumerable<RecurrentMoneyItem> AssociatedItems { get; set; }
-        public int TimelineWeight { get; set; }
-        public virtual IEnumerable<RecurrencyAdjustement> Adjustements { get; set; }
-        public bool DefaultCredit { get; set; }
-
-        // TODO: Questo e' correlato ad AssociatedItems.
-        public long? RecurrentMoneyItemID { get; set; }
+        public int TimelineWeight { get; set; }        
 
         public int? MoneyAccountId { get; set; }
 

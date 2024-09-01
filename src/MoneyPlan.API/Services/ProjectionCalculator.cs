@@ -167,9 +167,6 @@ namespace Savings.API.Services
                 decimal? periodIncome = 0;
                 decimal? periodOutcome = 0;
 
-                // TODO: Ma a che serve l'AccumulateForBudget? Non mi basta semplicemente prelevare in Cash?
-                //       Forse e' come il Salvadanaio in IntesaSanPaolo? Che non viene scritto da nessuna parte che e' finito in un altro 'cassetto'.
-                //       EDIT: A riga 197 si fa menzione di un PeriodicBudget che serve a sottrarre l'AccumulateForBudget. Mhhh.
                 var fixedItemsNotAccumulate = await context.FixedMoneyItems
                                                     .Include(x => x.Category)
                                                     .Where(x => accountId.HasValue ? x.AccountID == accountId : true)
@@ -178,10 +175,9 @@ namespace Savings.API.Services
                 
                 // TODO: Investigare sul come trasformare questa query per poter eliminare gli Adjustements.
                 var recurrentItems = await context.RecurrentMoneyItems
-                                                    .Include(x => x.Adjustements).Include(x => x.AssociatedItems).Include(x => x.Category)
+                                                    .Include(x => x.Category)
                                                     .Where(x => accountId.HasValue ? x.MoneyAccountId == accountId : true)
-                                                    .Where(x => (x.StartDate <= periodEnd && (!x.EndDate.HasValue || periodStart <= x.EndDate) && x.RecurrentMoneyItemID == null) ||
-                                                                (x.Adjustements.Count() > 0 && x.Adjustements.First().RecurrencyNewDate.HasValue && x.Adjustements.First().RecurrencyNewDate.Value >= periodStart && x.Adjustements.First().RecurrencyNewDate.Value <= periodEnd))
+                                                    .Where(x => x.StartDate <= periodEnd && (!x.EndDate.HasValue || periodStart <= x.EndDate))
                                                     .AsNoTracking().ToListAsync();
 
                 if (onlyInstallment) recurrentItems = recurrentItems.Where(x => x.Type == MoneyType.InstallmentPayment).ToList();
@@ -247,37 +243,6 @@ namespace Savings.API.Services
                         var currentInstallmentAmount = recurrentItem.Amount;
                         var currentInstallmentNote = recurrentItem.Note;
 
-                        List<MaterializedMoneySubitems> lstSubItemsRecurrent = new();
-                        //Check if there are child items
-                        if (recurrentItem.AssociatedItems != null)
-                        {
-                            var lstNoteAssociatedItems = new List<string>();
-                            var associatedItemsToCalculate = recurrentItem.AssociatedItems.Where(x => x.StartDate <= periodEnd && (!x.EndDate.HasValue || periodStart <= x.EndDate.Value));
-                            if (onlyInstallment) associatedItemsToCalculate = associatedItemsToCalculate.Where(x => x.Type == MoneyType.InstallmentPayment);
-                            foreach (var associatedItem in associatedItemsToCalculate)
-                            {
-                                var associatedIteminstallment = CalculateInstallmentInPeriod(associatedItem, installment.original, installment.original);
-                                if (associatedIteminstallment.Count() > 0)
-                                {
-                                    currentInstallmentAmount += associatedItem.Amount;
-                                    /*
-                                    if (currentAdjustment?.RecurrencyNewAmount == null)
-                                    {
-                                        currentInstallmentAmount += associatedItem.Amount;
-                                    }
-                                    */
-
-                                    lstNoteAssociatedItems.Add(associatedItem.Note);
-                                    lstSubItemsRecurrent.Add(new MaterializedMoneySubitems { Date = currentInstallmentDate, Amount = associatedItem.Amount, CategoryID = associatedItem.CategoryID, Note = associatedItem.Note });
-                                }
-                            }
-                            if (lstNoteAssociatedItems.Count > 0)
-                            {
-                                currentInstallmentNote += ": " + string.Join(',', lstNoteAssociatedItems.ToArray());
-                            }
-
-                        }
-
                         res.Add(new MaterializedMoneyItem
                         {
                             Date = currentInstallmentDate,
@@ -289,7 +254,6 @@ namespace Savings.API.Services
                             TimelineWeight = recurrentItem.TimelineWeight,
                             IsRecurrent = true,
                             RecurrentMoneyItemID = recurrentItem.ID,
-                            Subitems = lstSubItemsRecurrent
                         });
                     }
                 }
@@ -361,19 +325,12 @@ namespace Savings.API.Services
         private static DateTime CalculateActualInstallmentDate(RecurrentMoneyItem item, DateTime currentInstallmentOriginal)
         {
             DateTime currentInstallmentDate;
-            var adjustment = item.Adjustements?.Where(x => x.RecurrencyDate == currentInstallmentOriginal && x.RecurrencyNewDate.HasValue).FirstOrDefault();
-            if (adjustment != null)
+            // TODO: rimuovere dai parametri 'currentInstallmentOriginal'? E' possibile farlo?
+            currentInstallmentDate = currentInstallmentOriginal;
+            // Adjusting date based on Occurency Type.
+            if (item.OccurrencyType == OccurrencyType.WorkingDay)
             {
-                currentInstallmentDate = adjustment.RecurrencyNewDate.Value;
-            }
-            else
-            { 
-                currentInstallmentDate = currentInstallmentOriginal;
-                // Adjusting date based on Occurency Type.
-                if (item.OccurrencyType == OccurrencyType.WorkingDay)
-                {
-                    currentInstallmentDate = currentInstallmentDate.GetWorkingDay();
-                }
+                currentInstallmentDate = currentInstallmentDate.GetWorkingDay();
             }
             return currentInstallmentDate;
         }

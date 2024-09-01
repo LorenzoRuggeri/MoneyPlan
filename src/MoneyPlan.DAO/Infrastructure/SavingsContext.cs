@@ -79,7 +79,6 @@ namespace Savings.DAO.Infrastructure
         public DbSet<RecurrentMoneyItem> RecurrentMoneyItems { get; set; }
         public DbSet<FixedMoneyItem> FixedMoneyItems { get; set; }
         public DbSet<Configuration> Configuration { get; set; }
-        public DbSet<RecurrencyAdjustement> RecurrencyAdjustements { get; set; }
 
         public DbSet<MoneyAccount> MoneyAccounts { get; set; }
 

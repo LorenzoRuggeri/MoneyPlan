@@ -30,8 +30,6 @@ namespace MoneyPlan.SPA.Pages
 
         public bool Incoming { get; set; }
 
-        bool Credit { get; set; } = false;
-
         public MoneyCategory[] Categories { get; set; }
         public MoneyAccount[] Accounts { get; private set; }
 
@@ -116,14 +114,7 @@ namespace MoneyPlan.SPA.Pages
                 }
                 if (isNew)
                 {
-                    if (Credit)
-                    {
-                        await savingsAPI.InsertCreditFixedMoneyItem(fixedItemToEdit);
-                    }
-                    else
-                    {
-                        await savingsAPI.InsertFixedMoneyItem(fixedItemToEdit);
-                    }
+                    await savingsAPI.InsertFixedMoneyItem(fixedItemToEdit);
                 }
                 else
                 {

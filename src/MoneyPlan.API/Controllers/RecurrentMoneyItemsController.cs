@@ -24,21 +24,14 @@ namespace Savings.API.Controllers
 
         // GET: api/RecurrentMoneyItems
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RecurrentMoneyItem>>> GetRecurrentMoneyItems(int? accountId, long? parentItemID, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo)
+        public async Task<ActionResult<IEnumerable<RecurrentMoneyItem>>> GetRecurrentMoneyItems(int? accountId, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo)
         {
-            var res = _context.RecurrentMoneyItems.Include(x => x.AssociatedItems).AsQueryable();
+            var res = _context.RecurrentMoneyItems.AsQueryable();
             if (accountId.HasValue) res = res.Where(x => x.MoneyAccountId == accountId);
             if (onlyActive) res = res.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= DateTime.Now.Date);
             if (endDateFrom.HasValue) res = res.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= endDateFrom.Value);
             if (endDateTo.HasValue) res = res.Where(x => x.EndDate.HasValue && x.EndDate <= endDateTo.Value);
-            if (parentItemID.HasValue)
-            {
-                res = res.Where(x => x.RecurrentMoneyItemID == parentItemID.Value);
-            }
-            else
-            {
-                res = res.Where(x => x.RecurrentMoneyItemID == null);
-            }
+
             return await res.OrderBy(x => x.EndDate).ToListAsync();
         }
 
@@ -97,23 +90,6 @@ namespace Savings.API.Controllers
         [HttpPost]
         public async Task<ActionResult<RecurrentMoneyItem>> PostRecurrentMoneyItem(RecurrentMoneyItem recurrentMoneyItem)
         {
-            _context.RecurrentMoneyItems.Add(recurrentMoneyItem);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetRecurrentMoneyItem", new { id = recurrentMoneyItem.ID }, recurrentMoneyItem);
-        }
-
-        [HttpPost("Credit")]
-        public async Task<ActionResult<RecurrentMoneyItem>> InsertCreditFixedMoneyItem(FixedMoneyItem fixedItem)
-        {
-            var defaultCreditMoneyItem = _context.RecurrentMoneyItems.FirstOrDefault(x => x.DefaultCredit);
-
-            if (defaultCreditMoneyItem == null) return BadRequest("No default credit item");
-
-            DateTime targetDate = DateTime.Now.AddMonths(1);
-            targetDate = new DateTime(targetDate.Year, targetDate.Month, defaultCreditMoneyItem.StartDate.Day);
-
-            var recurrentMoneyItem = new RecurrentMoneyItem { CategoryID = fixedItem.CategoryID, Amount = fixedItem.Amount.Value, Note = fixedItem.Note, RecurrentMoneyItemID = defaultCreditMoneyItem.ID, StartDate = targetDate, EndDate = targetDate };
             _context.RecurrentMoneyItems.Add(recurrentMoneyItem);
             await _context.SaveChangesAsync();
 

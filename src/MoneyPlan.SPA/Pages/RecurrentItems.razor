@@ -1,9 +1,7 @@
 ﻿@page "/recurrent-items"
 @attribute [Authorize]
-@if (!parentItemID.HasValue)
-{
-    <h1>Recurrent Items</h1>
-}
+
+ <h1>Recurrent Items</h1>
 
 @if (recurrentMoneyItems == null)
 {
@@ -45,10 +43,6 @@ else
                     <th>Recurrency</th>
                     <th>Interval</th>
                     <th>Type</th>
-                    @if (!parentItemID.HasValue)
-                    {
-                        <th>Items</th>
-                    }
                     <th></th>
                 </tr>
             </thead>
@@ -63,10 +57,6 @@ else
                         <td data-title="Recurrency">@item.RecurrencyType.ToString()</td>
                         <td data-title="Interval">@item.RecurrencyInterval</td>
                         <td data-title="Type">@item.Type.ToString()</td>
-                        @if (!parentItemID.HasValue)
-                        {
-                            <td data-title="Items" @onclick:stopPropagation="true" @onclick:preventDefault="true" @onclick="@(() => ViewChild(item))"><a href="#">@item.AssociatedItems.Where(x => !x.EndDate.HasValue || x.EndDate.Value >= DateTime.Now.Date).Count()</a></td>
-                        }
                     </tr>
                 }
             </tbody>

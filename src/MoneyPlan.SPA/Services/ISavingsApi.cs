@@ -23,14 +23,11 @@ namespace MoneyPlan.SPA.Services
         [Post("/api/FixedMoneyItems")]
         Task<FixedMoneyItem> InsertFixedMoneyItem(FixedMoneyItem fixedMoneyItem);
 
-        [Post("/api/RecurrentMoneyItems/Credit")]
-        Task<FixedMoneyItem> InsertCreditFixedMoneyItem(FixedMoneyItem fixedMoneyItem);
-
         [Put("/api/FixedMoneyItems/{id}")]
         Task EditFixedMoneyItem(long id, FixedMoneyItem fixedMoneyItem);
 
         [Get("/api/RecurrentMoneyItems")]
-        Task<RecurrentMoneyItem[]> GetRecurrentMoneyItems(int? accountId, long? parentItemID, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo);
+        Task<RecurrentMoneyItem[]> GetRecurrentMoneyItems(int? accountId, bool onlyActive, DateTime? endDateFrom, DateTime? endDateTo);
 
         [Delete("/api/RecurrentMoneyItems/{id}")]
         Task<RecurrentMoneyItem> DeleteRecurrentMoneyItem(long id);
@@ -40,18 +37,6 @@ namespace MoneyPlan.SPA.Services
 
         [Put("/api/RecurrentMoneyItems/{id}")]
         Task EditRecurrentMoneyItem(long id, RecurrentMoneyItem fixedMoneyItem);
-
-        [Get("/api/RecurrencyAdjustements/ByIDRecurrencyAndDate")]
-        Task<RecurrencyAdjustement> GetRecurrencyAdjustementByIDRecurrencyAndDate(long idRecurrency, DateTime date);
-
-        [Post("/api/RecurrencyAdjustements")]
-        Task<RecurrencyAdjustement> InsertRecurrencyAdjustment(RecurrencyAdjustement recurrencyAdjustement);
-
-        [Put("/api/RecurrencyAdjustements/{id}")]
-        Task EditRecurrencyAdjustment(long id, RecurrencyAdjustement recurrencyAdjustement);
-
-        [Delete("/api/RecurrencyAdjustements/{id}")]
-        Task<RecurrencyAdjustement> DeleteRecurrencyAdjustment(long id);
 
         [Get("/api/Savings/Backup")]
         Task<Stream> GetBackup();

@@ -77,7 +77,7 @@ namespace MoneyPlan.SPA.Pages
 
         async Task InitializeInstallmentResume()
         {
-            var recurrentItems = await savingsAPI.GetRecurrentMoneyItems(FilterAccount, null, true, null, null);
+            var recurrentItems = await savingsAPI.GetRecurrentMoneyItems(FilterAccount, true, null, null);
             RecurrentItems = recurrentItems.Where(x => x.EndDate.HasValue && x.EndDate.Value >= DateTime.Now && x.Type == MoneyType.InstallmentPayment).OrderBy(x => x.Note).ToArray();
             DateTime endDate = DateTime.Now.AddMonths(1);
             if (RecurrentItems.Any())

@@ -38,18 +38,6 @@ namespace Savings.Model
 
         public bool Cash { get; set; }
         public decimal EndPeriodCashCarry { get; set; }
-
-        // TODO: Ma questo serve davvero metterlo sul DB? Investigare per capire se e' possibile farlo a posteriori.
-        public IEnumerable<MaterializedMoneySubitems> Subitems { get; set; } = new List<MaterializedMoneySubitems>();
     }
 
-    public class MaterializedMoneySubitems
-    {
-        public long ID { get; set; }
-        public DateTime Date { get; set; }
-        public decimal Amount { get; set; }
-        public long? CategoryID { get; set; }
-        public MoneyCategory Category { get; set; }
-        public string Note { get; set; }
-    }
 }

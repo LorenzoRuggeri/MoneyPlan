@@ -76,16 +76,6 @@ namespace MoneyPlan.SPA.Pages
             }
         }
 
-        async Task AdjustRecurrency(MaterializedMoneyItem item)
-        {
-            if (item.EndPeriod) return;
-            var res = await dialogService.OpenAsync<RecurrencyAdjustment>($"Recurrency Adjustment",
-                            new Dictionary<string, object>() { { "materializedItem", item } },
-                            new DialogOptions() { Width = "600px", Height = "300px" });
-            await InitializeList();
-            StateHasChanged();
-        }
-
         async Task AdjustFixedItem(MaterializedMoneyItem item)
         {
             if (item.EndPeriod) return;
