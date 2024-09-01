@@ -104,8 +104,16 @@ namespace Savings.API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<MoneyCategory>> DeleteMoneyCategory(long id)
         {
-            // TODO: Se una Categoria e' usata 'da qualche parte' allora non posso cancellarla.
             var moneyCategory = await _context.MoneyCategories.FindAsync(id);
+
+            var used = _context.FixedMoneyItems
+                .Include(x => x.Category)
+                .Any(x => x.CategoryID  == moneyCategory.ID || x.Category.Parent.ID == moneyCategory.ID || x.Category.Children.Any(child => child.ID == id));
+            if (used)
+            {
+                throw new Exception("It cannot be deleted being used in Fixed Items.");
+            }
+
             if (moneyCategory == null)
             {
                 return NotFound();
