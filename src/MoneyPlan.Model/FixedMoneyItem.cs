@@ -43,7 +43,8 @@ namespace Savings.Model
                 Date = this.Date,
                 ID = this.ID,
                 Note = this.Note,
-                TimelineWeight = this.TimelineWeight
+                TimelineWeight = this.TimelineWeight,
+                MaterializedMoneyItem = this.MaterializedMoneyItem
             };
         }
     }
