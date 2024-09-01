@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EPPlus" Version="7.0.5" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\MoneyPlan.Business\MoneyPlan.Business.csproj" />
+    <ProjectReference Include="..\MoneyPlan.DAO\MoneyPlan.DAO.csproj" />
+    <ProjectReference Include="..\MoneyPlan.Model\MoneyPlan.Model.csproj" />
   </ItemGroup>
 
 </Project>

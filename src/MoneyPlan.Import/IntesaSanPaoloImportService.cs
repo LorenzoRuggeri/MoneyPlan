@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using MoneyPlan.Business.Importer;
+using OfficeOpenXml;
 using Savings.DAO.Infrastructure;
 using Savings.Model;
 
@@ -7,27 +8,23 @@ namespace Savings.Import
     /// <summary>
     /// Service that import Excel from Intesa San Paolo into our Application.
     /// </summary>
-    public class IntesaSanPaoloImportService
+    public class IntesaSanPaoloImportService : IExcelImporter
     {
         private readonly SavingsContext context;
+
+        public string Name { get; } = "Intesa San Paolo";
 
         public IntesaSanPaoloImportService(SavingsContext context)
         {
             this.context = context;
         }
 
-        public void Import(string fileName)
+        public IEnumerable<FixedMoneyItem> LoadFromExcel(byte[] bytes)
         {
-            FileInfo fi = new FileInfo(fileName);
-            
-            if (!fi.Exists)
-            {
-                throw new FileNotFoundException("File doesn't exsist");
-            }
-
             List<FixedMoneyItem> operations = new List<FixedMoneyItem>();
 
-            using (ExcelPackage excelPackage = new ExcelPackage(fi))
+            using (MemoryStream ms = new MemoryStream(bytes))
+            using (ExcelPackage excelPackage = new ExcelPackage(ms))
             {
                 ExcelWorkbook workBook = excelPackage.Workbook;
                 ExcelWorksheet firstWorksheet = workBook.Worksheets[0];
@@ -39,47 +36,70 @@ namespace Savings.Import
                 int rowCount = firstWorksheet.Dimension.End.Row;
 
                 int actualRow = rowsToSkip + 1;
-                int actualCol = 1;
 
-                // TODO: completare l'import.
-                //List<MaterializedMoneySubitems>
                 for (int x = actualRow; x < rowCount; x++)
                 {
-                    var dateValue = firstWorksheet.Cells[x, 1];
-                    var noteOperationValue = firstWorksheet.Cells[x, 2];
-                    var noteDetailsValue = firstWorksheet.Cells[x, 3];
-                    var categoryValue = firstWorksheet.Cells[x, 6];
-                    var amountValue = firstWorksheet.Cells[x, 8];
+                    var dateCell = firstWorksheet.Cells[x, 1];
+                    var noteOperationCell = firstWorksheet.Cells[x, 2];
+                    var noteDetailsCell = firstWorksheet.Cells[x, 3];
+                    var categoryCell = firstWorksheet.Cells[x, 6];
+                    var amountCell = firstWorksheet.Cells[x, 8];
 
-                    // TODO: Nel caso una Category non riesca ad essere mappata allora vogliamo avere nelle Note
-                    //       il categoryValue, almeno cerchiamo di risalire a posteriori durante la fase di editing.
+                    // Discard invalid rows
+                    if (dateCell.Value == null || amountCell.Value == null)
+                    {
+                        continue;
+                    }
+
+                    // Transform output values
+                    var category = MapCategory(categoryCell.GetValue<string>());
+                    string notes;
+                    if (category == null)
+                    {
+                        // We give some hints to understand which is the source.
+                        notes = categoryCell.GetValue<string>() + " || " + noteOperationCell.GetValue<string>() + " || " + noteDetailsCell.GetValue<string>();
+                    }
+                    else
+                    {
+                        notes = noteOperationCell.GetValue<string>() + " || " + noteDetailsCell.GetValue<string>();
+                    }
+
                     var itemtoAdd = new FixedMoneyItem()
                     {
-                        AccountID = 1,  // Main Account (Intesa San Paolo)
                         Cash = false,
-                        Date = dateValue.GetValue<DateTime>(),
-                        Category = MapCategory(categoryValue.GetValue<string>()),
-                        Amount = amountValue.GetValue<decimal>(),
-                        Note = noteOperationValue.GetValue<string>() + " || " + noteDetailsValue.GetValue<string>()
+                        Date = dateCell.GetValue<DateTime>(),
+                        Category = category,
+                        Amount = amountCell.GetValue<decimal>(),
+                        Note = notes
                     };
 
                     operations.Add(itemtoAdd);
                 }
-
-                foreach(var operation in operations)
-                {
-                    // NOTE: Controllo sui doppioni che pero' lascia molto a desiderare.... in quanto potrei avere nello stesso giorno
-                    //       due operazioni con lo stesso importo.
-                    //if (!context.FixedMoneyItems.Any(x => x.Date == operation.Date && x.Amount == operation.Amount))
-                    //{
-                        context.FixedMoneyItems.Add(operation);
-                    //}
-                }
-
-
-                context.SaveChanges();
-
             }
+
+            return operations;
+        }
+
+        public void Import(int accountId, IEnumerable<FixedMoneyItem> operations)
+        {
+            if (context.MoneyAccounts.FirstOrDefault(x => x.ID == accountId) == null)
+            {
+                throw new Exception($"Money account '{accountId}' has not been found");
+            }
+
+            operations = operations.Select(x => { x.AccountID = accountId; return x; });
+
+            foreach (var operation in operations)
+            {
+                // NOTE: Controllo sui doppioni che pero' lascia molto a desiderare.... in quanto potrei avere nello stesso giorno
+                //       due operazioni con lo stesso importo.
+                //if (!context.FixedMoneyItems.Any(x => x.Date == operation.Date && x.Amount == operation.Amount))
+                //{
+                context.FixedMoneyItems.Add(operation);
+                //}
+            }
+
+            context.SaveChanges();
         }
 
 
@@ -129,6 +149,7 @@ namespace Savings.Import
 
             return found;
         }
+
 
     }
 }

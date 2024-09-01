@@ -11,6 +11,9 @@ using Savings.Model;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Savings.Import;
+using MoneyPlan.Business.Importer;
+using MoneyPlan.Import;
+using MoneyPlan.Import.Extensions;
 
 const string ApiKeys = "ApiKeys";
 
@@ -49,7 +52,8 @@ else if (authenticationToUse == AuthenticationToUse.ApiKey)
 builder.Services.AddTransient<IProjectionCalculator, ProjectionCalculator>();
 builder.Services.AddTransient<ReportService>();
 builder.Services.AddTransient<CategoriesService>();
-builder.Services.AddScoped<IntesaSanPaoloImportService>();
+
+builder.Services.AddImporters();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

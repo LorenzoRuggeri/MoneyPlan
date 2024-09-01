@@ -1,4 +1,5 @@
-﻿using Refit;
+﻿using MoneyPlan.Model.API;
+using Refit;
 using Savings.Model;
 using System;
 using System.Threading.Tasks;
@@ -85,10 +86,13 @@ namespace MoneyPlan.SPA.Services
         [Get("/api/Report/GetCategoryResumeDetail")]
         Task<ReportDetail[]> GetCategoryResumeDetail(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period);
 
-        [Put("/api/Import/ImportFromFile")]
-        Task ImportFromfile();
+        [Post("/api/Import/ImportFromFile")]
+        Task ImportFromfile(ImportFileRequest request);
 
         [Get("/api/MoneyAccounts")]
         Task<MoneyAccount[]> GetMoneyAccounts();
+
+        [Get("/api/Import/Importers")]
+        Task<IEnumerable<string>> GetImporters();
     }
 }
