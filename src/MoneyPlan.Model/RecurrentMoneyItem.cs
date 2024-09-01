@@ -28,6 +28,8 @@ namespace Savings.Model
         public int? MoneyAccountId { get; set; }
 
         public virtual MoneyAccount MoneyAccount { get; set; }
+
+        public virtual ICollection<MaterializedMoneyItem> MaterializedMoneyItems { get; set; }
     }
 
 

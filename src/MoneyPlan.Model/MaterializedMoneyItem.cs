@@ -12,8 +12,11 @@ namespace Savings.Model
         public DateTime Date { get; set; }
         public decimal Amount { get; set; }
         public MoneyType Type { get; set; }
-        public MoneyCategory Category { get; set; }
+
         public long? CategoryID { get; set; }
+
+        public virtual MoneyCategory Category { get; set; }
+
         public string Note { get; set; }
         public decimal Projection { get; set; }
 
@@ -24,8 +27,15 @@ namespace Savings.Model
 
         public int TimelineWeight { get; set; }
         public bool IsRecurrent { get; set; }
+        
         public long? RecurrentMoneyItemID { get; set; }
+
+        public virtual RecurrentMoneyItem RecurrentMoneyItem { get; set; }
+
         public long? FixedMoneyItemID { get; set; }
+
+        public virtual FixedMoneyItem FixedMoneyItem { get; set; }
+
         public bool Cash { get; set; }
         public decimal EndPeriodCashCarry { get; set; }
 

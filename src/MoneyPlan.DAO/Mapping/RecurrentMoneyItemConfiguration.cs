@@ -14,10 +14,12 @@ namespace Savings.DAO.Mapping
         {
             builder.HasKey(x => x.ID);
 
-            builder
-                .HasOne(s => s.MoneyAccount)
+            builder.HasOne(s => s.MoneyAccount)
                 .WithMany(m => m.RecurrentMoneyItems)
                 .HasForeignKey(e => e.MoneyAccountId);
+
+            builder.HasMany(x => x.MaterializedMoneyItems)
+                .WithOne(x => x.RecurrentMoneyItem);
         }
     }
 }

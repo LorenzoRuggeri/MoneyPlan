@@ -46,21 +46,6 @@ namespace Savings.Model
         public decimal Amount { get; set; }
     }
 
-    public class ReportFullDetailWithCategories
-    {
-        public string Type { get; set; }
-
-        public long ID { get; set; }
-
-        public string Period { get; set; }
-
-        public DateTime Date { get; set; }
-
-        public string Description { get; set; }
-
-        public decimal Amount { get; set; }
-    }
-
 
     public class GroupCategory : Category
     {

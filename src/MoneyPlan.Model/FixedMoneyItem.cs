@@ -21,6 +21,8 @@ namespace Savings.Model
 
         public virtual MoneyAccount Account { get; set; }        
 
+        public virtual MaterializedMoneyItem MaterializedMoneyItem { get; set; }
+
         public bool Cash { get; set; }
 
         /// <summary>

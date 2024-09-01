@@ -47,13 +47,13 @@ namespace Savings.API.Services
 
 
         //public IEnumerable<(GroupCategory category, IEnumerable<ReportFullDetail> details)> GetFullDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details)
-        public IEnumerable<AAA> GetFullDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details)
+        public IEnumerable<GroupCategoryDetails> GetFullDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details)
         {
             var categories = GetStructuredCategories();
 
             var results = details.Select(x => new { ReportFullDetail = x, Category = categories.Where(y => y.ID == x.CategoryID || y.Related.Any(child => child.ID == x.CategoryID)).FirstOrDefault() ?? new GroupCategory() { Description = "<Unspecified>" } })
                 .GroupBy(x => x.Category)
-                .Select(x => new AAA { GroupCategory = x.Key, Details = x.Select(x => x.ReportFullDetail).ToList() });
+                .Select(x => new GroupCategoryDetails { GroupCategory = x.Key, Details = x.Select(x => x.ReportFullDetail).ToList() });
 
             /*
             var first = details.GroupBy(x =>
@@ -72,7 +72,7 @@ namespace Savings.API.Services
             return results;
         }
 
-        public class AAA
+        public class GroupCategoryDetails
         {
             public GroupCategory GroupCategory { get; set; }
             public List<ReportFullDetail> Details { get; set; } = new List<ReportFullDetail>();

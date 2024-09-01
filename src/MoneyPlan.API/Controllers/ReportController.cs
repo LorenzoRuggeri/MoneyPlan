@@ -119,6 +119,12 @@ namespace Savings.API.Controllers
 
             var materializedItemsFirstLevel = await _context.MaterializedMoneyItems
                 .Include(x => x.Category)
+                .Include(x => x.RecurrentMoneyItem)
+                .Include(x => x.FixedMoneyItem)
+                .Where(x => accountId.HasValue ?
+                    (x.FixedMoneyItemID.HasValue ? x.FixedMoneyItem.AccountID == accountId : true ||
+                    x.RecurrentMoneyItemID.HasValue ? x.RecurrentMoneyItem.MoneyAccountId == accountId : true) :
+                true)
                 .Where(firstLevelPredicate)
                 .OrderByDescending(x => x.ID)
                 .Select(x => new ReportFullDetail { Type = "MaterL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
@@ -126,6 +132,12 @@ namespace Savings.API.Controllers
 
             var materializedItemsSecondLevel = await _context.MaterializedMoneyItems
                 .Include(x => x.Category)
+                .Include(x => x.RecurrentMoneyItem)
+                .Include(x => x.FixedMoneyItem)
+                .Where(x => accountId.HasValue ?
+                    (x.FixedMoneyItemID.HasValue ? x.FixedMoneyItem.AccountID == accountId : true ||
+                    x.RecurrentMoneyItemID.HasValue ? x.RecurrentMoneyItem.MoneyAccountId == accountId : true) :
+                true)
                 .Where(secondLevelPredicate)
                 .SelectMany(x => x.Subitems, (moneyItem, subitem) => new ReportFullDetail { Type = "MaterL2", ID = subitem.ID, Date = subitem.Date, Period = subitem.Date.ToString(periodPattern), Description = subitem.Note, CategoryID = subitem.CategoryID, Amount = subitem.Amount })
                 .Where(subItemPredicate)
