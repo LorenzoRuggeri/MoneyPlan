@@ -20,8 +20,7 @@ namespace Savings.DAO.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration<MoneyCategory>(new MoneyCategoryConfiguration());
-            modelBuilder.ApplyConfiguration<MoneyAccount>(new MoneyAccountConfiguration());
+            modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);
 
             modelBuilder.Entity<Configuration>().HasData(
                 new Configuration { ID = 1, EndPeriodRecurrencyInterval = 1, EndPeriodRecurrencyType = RecurrencyType.Month }
@@ -81,6 +80,12 @@ namespace Savings.DAO.Infrastructure
         public DbSet<Configuration> Configuration { get; set; }
 
         public DbSet<MoneyAccount> MoneyAccounts { get; set; }
+
+        public DbSet<BudgetPlan> BudgetPlans { get; set; }
+
+        public DbSet<BudgetPlanRule> BudgetPlanRules { get; set; }
+
+        public DbSet<BudgetPlanBudgetRules> RelationshipBudgetPlanToRules { get; set; }
 
     }
 }

@@ -12,6 +12,7 @@ namespace Savings.Model
         public ReportPeriodAmount[] Data { get; set; }
     }
 
+    // TODO: Vedere se riesco a metterlo a fattor comune. Mi pare un buon candidato.
     public class ReportPeriodAmount
     {
         public string Period { get; set; }
@@ -24,7 +25,7 @@ namespace Savings.Model
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Description of Category
+        ///     <para>Description of whatever you need to be represented.</para>
         /// </summary>
         public string Description { get; set; }
     }

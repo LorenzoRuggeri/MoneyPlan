@@ -1,0 +1,51 @@
+﻿@using MoneyPlan.Model.API.Report
+
+<h2>Categories</h2>
+<div class="table-responsive">
+    <table class="table table-bordered table-sm table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th></th>
+                @foreach (var c in Data)
+                {
+                    <th>@c.CategoryIcon @c.Category</th>
+                }
+            </tr>
+
+        </thead>
+        <tbody>
+            @foreach (var period in Data.SelectMany(x => x.Data.Select(x => x.Period)).Distinct().OrderByDescending(x => x))
+            {
+                <tr>
+                    <td><b>@period</b></td>
+                    @foreach (var c in Data)
+                    {
+                        var item = c.Data.Where(x => x.Period == period).FirstOrDefault();
+                        <td class="item-action text-right" @onclick="@(() => OpenDetails(c.CategoryID,period))">@item?.Amount.ToString("N2")</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 my-5">
+            <RadzenChart>
+                <RadzenChartTooltipOptions Shared="true" />
+                @foreach (var category in FilterStatisticsResume())
+                {
+                    <RadzenLineSeries Smooth="false" Data="@category.Data" CategoryProperty="Period" Title="@category.Category" ValueProperty="Amount">
+                        <RadzenMarkers MarkerType="MarkerType.Circle" />
+                        <RadzenSeriesDataLabels Visible="false" />
+                    </RadzenLineSeries>
+                }
+                <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+                <RadzenValueAxis Formatter="@FormatAsAmount">
+                    <RadzenGridLines Visible="true" />
+                    <RadzenAxisTitle Text="Money" />
+                </RadzenValueAxis>
+            </RadzenChart>
+        </div>
+    </div>
+</div>

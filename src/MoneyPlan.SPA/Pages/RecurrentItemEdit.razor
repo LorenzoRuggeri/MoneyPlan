@@ -1,7 +1,7 @@
 ﻿@attribute [Authorize]
 <EditForm Model="@recurrentItemToEdit" OnValidSubmit="@OnValidSubmit">
     <DataAnnotationsValidator />
-    <div class="form-row">
+    <div class="row">
         <div class="form-group col">
             <label>Start date :</label><br />
             <RadzenDatePicker @bind-Value="recurrentItemToEdit.StartDate" DateFormat="dd/MM/yyyy" />
@@ -13,7 +13,7 @@
             <ValidationMessage For="@(() => recurrentItemToEdit.EndDate)" />
         </div>
     </div>
-    <div class="form-row">
+    <div class="row">
         <div class="form-group col">
             <label>Amount:</label>
             <InputNumber @bind-Value="@recurrentItemToEdit.Amount" @bind-Value:format="F2" class="form-control" @ref="amountInputNumber" />
@@ -30,7 +30,7 @@
         <InputText @bind-Value="@recurrentItemToEdit.Note" class="form-control" />
         <ValidationMessage For="@(() => recurrentItemToEdit.Note)" />
     </div>
-    <div class="form-row">
+    <div class="row">
         <div class="form-group col-md-4 col">
             <label>Recurrency:</label>
             <InputSelect @bind-Value="recurrentItemToEdit.RecurrencyType" class="form-control">
@@ -47,7 +47,7 @@
             <ValidationMessage For="@(() => recurrentItemToEdit.RecurrencyInterval)" />
         </div>
     </div>
-    <div class="form-row">
+    <div class="row">
         <div class="form-group col-md-5 col-sm-12">
             <label>Type:</label>
             <InputSelect @bind-Value="recurrentItemToEdit.Type" class="form-control">
@@ -69,7 +69,7 @@
             <ValidationMessage For="@(() => recurrentItemToEdit.OccurrencyType)" />
         </div>
     </div>
-    <div class="form-row">
+    <div class="row">
         <div class="form-group col-6">
             <label>Category:</label>
             <CategorySelector Items="Categories" @bind-CategoryId="recurrentItemToEdit.CategoryID" />

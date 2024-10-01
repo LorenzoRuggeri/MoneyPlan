@@ -1,4 +1,5 @@
 ﻿using MoneyPlan.Model.API;
+using MoneyPlan.Model.API.Report;
 using Refit;
 using Savings.Model;
 using System;
@@ -71,6 +72,9 @@ namespace MoneyPlan.SPA.Services
         [Get("/api/Report/GetCategoryResumeDetail")]
         Task<ReportDetail[]> GetCategoryResumeDetail(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period);
 
+        [Get("/api/Report/GetBudgetPlanResume")]
+        Task<ReportBudgetPlan[]> GetBudgetPlanResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo);
+
         [Post("/api/Import/ImportFromFile")]
         Task ImportFromfile(ImportFileRequest request);
 
@@ -79,5 +83,26 @@ namespace MoneyPlan.SPA.Services
 
         [Get("/api/Import/Importers")]
         Task<IEnumerable<string>> GetImporters();
+
+        [Get("/api/BudgetPlan/")]
+        Task<IEnumerable<BudgetPlan>> GetBudgetPlans();
+
+        [Put("/api/BudgetPlan/")]
+        Task UpdateBudgetPlan(int id, BudgetPlan model);
+
+        [Get("/api/BudgetPlan/Rules")]
+        Task<IEnumerable<BudgetPlanRule>> GetAnagraphicRules();
+
+        [Get("/api/BudgetPlan/{budgetPlanId}/Rules")]
+        Task<IEnumerable<BudgetPlanRule>> GetBudgetPlanRules(int budgetPlanId);
+
+        [Post("/api/BudgetPlan/Rules")]
+        Task<int> InsertBudgetPlanRule(BudgetPlanRule model);
+
+        [Put("/api/BudgetPlan/Rules/{id}")]
+        Task EditBudgetPlanRule(int id, BudgetPlanRule model);
+
+        [Delete("/api/BudgetPlan/Rules")]
+        Task DeleteBudgetPlanRule(int id);
     }
 }

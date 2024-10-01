@@ -1,6 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+@using Microsoft.AspNetCore.Components;
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
+
+<HeadContent>
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+    <RadzenTheme Theme="material" @rendermode="RenderMode.InteractiveWebAssembly" />
+</HeadContent>
 
 <RadzenDialog />
 <RadzenNotification />

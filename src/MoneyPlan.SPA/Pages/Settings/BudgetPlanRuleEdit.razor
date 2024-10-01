@@ -1,0 +1,54 @@
+﻿@attribute [Authorize]
+<EditForm Model="@Model" OnValidSubmit="@OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="form-group col-12 align-content-end">
+            <label>Type:</label>
+            <div>
+                <InputSelect @bind-Value="Model.Type" class="form-control">
+                    @foreach (var value in Enum.GetValues(typeof(Savings.Model.BudgetPlanType)))
+                    {
+                        <option>@value</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Model.Type)" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-12">
+            <label>Category:</label>
+            <div>
+                <CategorySelector Items="Categories" @bind-CategoryId="@Model.CategoryId" />
+                <ValidationMessage For="@(() => Model.CategoryId)" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">
+            <label>Filter:</label>
+            <InputSelect @bind-Value="Model.CategoryFilter" class="form-control">
+                @foreach (var value in Enum.GetValues(typeof(Savings.Model.StringFilterType)))
+                {
+                    <option>@value</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="col-6">
+            <label>Text to filter:</label>
+            <InputText @bind-Value="Model.CategoryText" class="form-control" />
+        </div>
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-success">
+            <span class="oi oi-circle-check" aria-hidden="true"></span>SAVE
+        </button>
+        <button type="button" class="btn btn-warning" @onclick="@(() => { this.dialogService.Close(false); })">
+            <span class="oi oi-reload" aria-hidden="true"></span>CANCEL
+        </button>
+        @if (!isNew)
+        {
+            <button type="button" class="btn btn-danger" @onclick="@(()=>Delete())"><span class="oi oi-trash" aria-hidden="true"></span></button>
+        }
+    </div>
+</EditForm>

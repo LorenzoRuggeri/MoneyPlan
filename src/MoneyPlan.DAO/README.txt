@@ -9,3 +9,9 @@
 
 > EntityFrameworkCore\Update-Database -Context "SavingsContext" -StartupProject "MoneyPlan.API" -Project "MoneyPlan.DAO"
 
+====================================================
+
+** In case a Migration wasn't needed and it result in an empty Migration, you should delete it.
+
+> EntityFrameworkCore\Remove-Migration -Context "SavingsContext" -StartupProject MoneyPlan.API
+

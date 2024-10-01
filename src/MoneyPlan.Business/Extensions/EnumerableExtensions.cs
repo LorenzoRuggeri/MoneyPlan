@@ -1,4 +1,4 @@
-﻿namespace Savings.API.Extensions
+﻿namespace MoneyPlan.Business
 {
     public static class EnumerableExtensions
     {
@@ -29,6 +29,11 @@
                 e.Dispose();
                 while (stack.Count != 0) stack.Pop().Dispose();
             }
+        }
+
+        public static IEnumerable<TSource> ExceptByProperty<TSource, TProperty>(this IEnumerable<TSource> first, IEnumerable<TSource> second, Func<TSource, TProperty> keySelector)
+        {
+            return first.ExceptBy(second, x => x, GenericComparer<TSource, TProperty>.Comparer(keySelector));
         }
     }
 }

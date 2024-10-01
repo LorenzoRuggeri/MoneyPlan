@@ -1,0 +1,49 @@
+﻿@using MoneyPlan.Model.API.Report
+
+<h2>Budget Plan</h2>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 my-5">
+            <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
+                <RadzenChart ColorScheme="ColorScheme.Palette">
+                    @foreach (var budgetGroup in BudgetPlanResumeByAmount())
+                    {
+                        <RadzenStackedColumnSeries Data="@budgetGroup.Data"
+                                                   CategoryProperty="Period" ValueProperty="Percent"
+                                                   Title="@(budgetGroup.Description)">
+                            <RadzenSeriesDataLabels Visible="true" />
+                        </RadzenStackedColumnSeries>
+                    }
+                    <RadzenColumnOptions Radius="5" />
+                    <RadzenValueAxis Formatter="@FormatAsEUR" Min="0" Step="50">
+                        <RadzenGridLines Visible="true" LineType="LineType.Dashed" />
+                        <RadzenAxisTitle Text="Percent" />
+                    </RadzenValueAxis>
+                </RadzenChart>
+            </RadzenColumn>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-12 my-5">
+            <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
+                <RadzenChart ColorScheme="ColorScheme.Palette" SeriesClick="OnClickPie">
+                    <RadzenPieSeries Data="@BudgetPlanResumeByPercent()" Title="Revenue" CategoryProperty="Period" ValueProperty="Percent">
+                        <TooltipTemplate Context="data">
+                            <div>
+                                &euro; <span>@data.Amount</span><br />
+                                <strong>@data.Percent  %</strong>
+                            </div>
+                        </TooltipTemplate>
+                        <ChildContent>
+                            <RadzenSeriesDataLabels Visible="true" OffsetX="7" OffsetY="5" />
+                        </ChildContent>
+                    </RadzenPieSeries>
+                </RadzenChart>
+            </RadzenColumn>
+        </div>
+    </div>
+</div>

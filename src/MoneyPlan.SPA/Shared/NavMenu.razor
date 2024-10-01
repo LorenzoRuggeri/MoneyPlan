@@ -6,7 +6,7 @@
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Savings</a>
+        <a class="navbar-brand" href="">Money Plan</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -42,13 +42,12 @@
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/reports">
-                <span class="oi oi-document" aria-hidden="true"></span> Reports
+                <span class="oi oi-bar-chart" aria-hidden="true"></span> Reports
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <RadzenHtmlEditorSeparator></RadzenHtmlEditorSeparator>
-            CIAO
         </div>
 
         <div class="nav-item px-3">
@@ -58,15 +57,20 @@
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/import">
-                <span class="oi oi-beaker" aria-hidden="true"></span> Import
+            <NavLink class="nav-link" href="/settings/budgetplan-rules">
+                <span class="oi oi-beaker" aria-hidden="true"></span> Budget Plan Rules
             </NavLink>
         </div>
 
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/import">
+                <span class="oi oi-data-transfer-upload" aria-hidden="true"></span> Import
+            </NavLink>
+        </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" @onclick="DownloadFileFromStream" href="#">
-                <span class="oi oi-arrow-circle-bottom" aria-hidden="true"></span> Backup
+                <span class="oi oi-data-transfer-download" aria-hidden="true"></span> Backup
             </NavLink>
         </div>
     </nav>

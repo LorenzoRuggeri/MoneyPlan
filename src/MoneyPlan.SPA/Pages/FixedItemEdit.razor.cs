@@ -93,8 +93,15 @@ namespace MoneyPlan.SPA.Pages
             var res = await dialogService.Confirm("Are you sure you want delete?", "Delete fixed item", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
             if (res.HasValue && res.Value)
             {
-                var deletedItem = await savingsAPI.DeleteFixedMoneyItem(fixedItemToEdit.ID);
-                this.dialogService.Close(true);
+                try
+                {
+                    var deletedItem = await savingsAPI.DeleteFixedMoneyItem(fixedItemToEdit.ID);
+                    this.dialogService.Close(true);
+                }
+                catch (Refit.ApiException ex)
+                {
+                    await this.dialogService.Alert(ex.HasContent ? ex.Content : ex.ReasonPhrase, "Error while deleting");
+                }
             }
         }
 

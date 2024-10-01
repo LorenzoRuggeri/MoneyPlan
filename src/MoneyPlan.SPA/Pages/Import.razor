@@ -4,7 +4,7 @@
 
 <div class="text-center">
 
-    <div class="form-row">
+    <div class="row">
         <div class="col-md-2 col">
             <span>Account:</span><br />
             <RadzenDropDown TValue="int?" @bind-Value="@FilterAccount" Data="@Accounts"
@@ -17,7 +17,7 @@
                             AllowClear=false Placeholder="Select service..."></RadzenDropDown>
         </div>
     </div>
-    <div class="form-row">
+    <div class="row">
         <div class="col-md-12 col">
             <InputFile OnChange="@(args => LoadFiles(args))" />
         </div>

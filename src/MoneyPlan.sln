@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{55E57F32
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyPlan.API.Tests", "Tests\MoneyPlan.API.Tests\MoneyPlan.API.Tests.csproj", "{501A30B0-2E8D-423E-9D8D-147036B2AF5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoneyPlan.Business", "MoneyPlan.Business\MoneyPlan.Business.csproj", "{716EE77F-4404-4653-A3BB-8136C34026DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MoneyPlan.Business", "MoneyPlan.Business\MoneyPlan.Business.csproj", "{716EE77F-4404-4653-A3BB-8136C34026DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

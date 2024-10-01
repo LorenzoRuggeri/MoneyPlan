@@ -9,7 +9,7 @@ else
 {
     <EditForm Model="@Configuration" OnValidSubmit="@OnValidSubmit">
         <DataAnnotationsValidator />
-        <div class="form-row">
+        <div class="row">
             <div class="form-group col-3">
                 <label>Date :</label><br />
                 <RadzenDatePicker @bind-Value="LastMaterializedDate" DateFormat="dd/MM/yyyy" />

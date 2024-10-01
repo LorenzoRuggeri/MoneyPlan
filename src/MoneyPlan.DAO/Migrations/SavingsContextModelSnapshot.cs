@@ -17,6 +17,81 @@ namespace Savings.DAO.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
+            modelBuilder.Entity("Savings.Model.BudgetPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("NeedsPercentage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SavingsPercentage")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("WantsPercentage")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BudgetPlans", (string)null);
+                });
+
+            modelBuilder.Entity("Savings.Model.BudgetPlanBudgetRules", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BudgetPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("BudgetPlanRuleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetPlanRuleId");
+
+                    b.HasIndex("BudgetPlanId", "BudgetPlanRuleId")
+                        .IsUnique();
+
+                    b.ToTable("BudgetPlanBudgetPlanRule", (string)null);
+                });
+
+            modelBuilder.Entity("Savings.Model.BudgetPlanRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CategoryFilter")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long?>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CategoryText")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Income")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("BudgetPlanRules", (string)null);
+                });
+
             modelBuilder.Entity("Savings.Model.Configuration", b =>
                 {
                     b.Property<long>("ID")
@@ -376,6 +451,34 @@ namespace Savings.DAO.Migrations
                     b.ToTable("RecurrentMoneyItems");
                 });
 
+            modelBuilder.Entity("Savings.Model.BudgetPlanBudgetRules", b =>
+                {
+                    b.HasOne("Savings.Model.BudgetPlan", "BudgetPlan")
+                        .WithMany("Rules")
+                        .HasForeignKey("BudgetPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Savings.Model.BudgetPlanRule", "BudgetPlanRule")
+                        .WithMany("BudgetPlans")
+                        .HasForeignKey("BudgetPlanRuleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BudgetPlan");
+
+                    b.Navigation("BudgetPlanRule");
+                });
+
+            modelBuilder.Entity("Savings.Model.BudgetPlanRule", b =>
+                {
+                    b.HasOne("Savings.Model.MoneyCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("Savings.Model.FixedMoneyItem", b =>
                 {
                     b.HasOne("Savings.Model.MoneyAccount", "Account")
@@ -436,6 +539,16 @@ namespace Savings.DAO.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("MoneyAccount");
+                });
+
+            modelBuilder.Entity("Savings.Model.BudgetPlan", b =>
+                {
+                    b.Navigation("Rules");
+                });
+
+            modelBuilder.Entity("Savings.Model.BudgetPlanRule", b =>
+                {
+                    b.Navigation("BudgetPlans");
                 });
 
             modelBuilder.Entity("Savings.Model.FixedMoneyItem", b =>

@@ -1,4 +1,10 @@
+@using Microsoft.AspNetCore.Components;
 @inject IConfiguration Configuration
+
+<head>
+    <RadzenTheme Theme="material" @rendermode="RenderMode.InteractiveWebAssembly" />
+</head>
+
 @if (Configuration["AuthenticationToUse"] == AuthenticationToUse.AzureAD)
 {
     <CascadingAuthenticationState>

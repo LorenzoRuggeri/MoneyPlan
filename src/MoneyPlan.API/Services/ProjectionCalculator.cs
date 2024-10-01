@@ -151,10 +151,10 @@ namespace Savings.API.Services
                 res.Add(lastEndPeriod);
 
             //var fromDate = lastEndPeriod?.Date ?? throw new Exception("Unable to define the starting time");
-            var fromDate = lastEndPeriod?.Date.AddDays(1) ?? (from.HasValue ? from.Value : new DateTime(2000, 1, 1));
+            var fromDate = (from.HasValue ? from.Value : lastEndPeriod?.Date) ?? throw new Exception("Unable to define the starting time");
 
-            //var periodStart = fromDate.AddDays(1);
-            var periodStart = new DateTime(fromDate.Year, fromDate.Month, fromDate.Day);
+            var periodStart = fromDate.AddDays(1);
+            //var periodStart = new DateTime(fromDate.Year, fromDate.Month, fromDate.Day);
             var config = context.Configuration.FirstOrDefault() ?? throw new Exception("Unable to find the configuration");
             DateTime periodEnd;
             bool endPeriodCashCarryUsed = false;

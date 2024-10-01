@@ -1,0 +1,59 @@
+﻿@page "/reports"
+@attribute [Authorize]
+
+<div class="sticky-top bg-light">
+    <h1>Reports</h1>
+
+    <div class="row">
+        <div class="col-md-3 col">
+            <label>Account:</label>
+            <div>
+                <RadzenDropDown TValue="int?" @bind-Value="@FilterAccount" Data="@Accounts"
+                                TextProperty="Name" ValueProperty="ID" AllowClear="true" Placeholder="All accounts"
+                                Change="AccountChanged" />
+            </div>
+        </div>
+        <div class="col-md-3 col">
+            <label>From:</label><br />
+            <RadzenDatePicker @bind-Value="FilterDateFrom" DateFormat="dd/MM/yyyy" Change="@(args => DateTimeDateChanged(args, nameof(FilterDateFrom)))" />
+        </div>
+        <div class="col-md-3 col">
+            <label>To:</label><br />
+            <RadzenDatePicker @bind-Value="FilterDateTo" DateFormat="dd/MM/yyyy" Change="@(args => DateTimeDateChanged(args, nameof(FilterDateTo)))" />
+        </div>
+        <div class="col-md-3 col">
+            <label>Group by:</label>
+            <select class="form-control" @onchange="FilterGroupByCategoryPeriodChanged">
+                <option value="yy/MM" selected="@("yy/MM" == FilterCategoryGroupByPeriod)">Month</option>
+                <option value="yyyy" selected="@("yyyy" == FilterCategoryGroupByPeriod)">Year</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+@if (IsLoading)
+{
+    <p><em>Loading...</em></p>
+    return;
+}
+
+@if (ReportType != null)
+{
+    <RadzenButton Text="Back" Click="OnClickBackButton"></RadzenButton>
+
+    <CascadingValue Name="FilterCategoryGroupByPeriod" Value="@FilterCategoryGroupByPeriod">
+    <CascadingValue Name="FilterAccount" Value="@FilterAccount">
+    <CascadingValue Name="FilterDateFrom" Value=@FilterDateFrom>
+    <CascadingValue Name="FilterDateTo" Value=@FilterDateTo>
+        <DynamicComponent Type="ReportType"></DynamicComponent>
+    </CascadingValue>
+    </CascadingValue>
+    </CascadingValue>
+    </CascadingValue>
+    return;
+}
+else
+{
+    <RadzenButton Text="Categories" Click="OnClickCategories"></RadzenButton>
+    <RadzenButton Text="Budget Plan" Click="OnClickBudgetPlan"></RadzenButton>
+}

@@ -1,0 +1,51 @@
+﻿@page "/settings/budgetplan-rules"
+@attribute [Authorize]
+<h1>Budget Plan Rules</h1>
+
+<div class="row">
+    <div class="col-md-12 col">
+        <span>Budget Plan:</span><br />
+        <RadzenDropDown TValue="int?" @bind-Value="@FilterBudgetPlan" Data="@BudgetPlans"
+                        TextProperty="Name" ValueProperty="Id"
+                        AllowClear=false Placeholder="Select Budget Plan" Change="@((object x) => OnBudgetPlanChanged(Convert.ToInt32(x)))"></RadzenDropDown>
+    </div>
+</div>
+<button class="btn btn-success" @onclick="AddNew">
+    <span class="oi oi-plus" aria-hidden="true"></span>ADD
+</button>
+<button class="btn btn-success" @onclick="SaveBudgetPlan">
+    <span class="oi oi-command" aria-hidden="true"></span>SAVE
+</button>
+
+<div class="table-responsive-sm">
+    <table class="table table-sm table-striped table-hover mobile-resume">
+        <thead class="table-dark">
+            <tr>
+                <th>Filter</th>
+                <th>Category</th>
+                <th>Type</th>
+                <th>Apply</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Data)
+            {
+                <tr class="item-action" @onclick="@(() => Edit(item))">
+                    <td data-title="Account" class="text-center">
+                        @if (string.IsNullOrEmpty(item.CategoryText))
+                        {
+                            <p><i>No text filter</i></p>
+                        }
+                        else
+                        {
+                            @(item.CategoryFilter.GetDisplayDescription() + " '" + @item.CategoryText + "'")
+                        }
+                        </td>
+                    <td data-title="Category" class="text-center">@(item.Category.Description)</td>
+                    <td data-title="Type">@item.Type</td>
+                    <td @onclick:stopPropagation="true"><RadzenCheckBox @bind-Value="@item.Checked" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
