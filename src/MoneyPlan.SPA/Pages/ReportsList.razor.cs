@@ -41,6 +41,18 @@ namespace MoneyPlan.SPA.Pages
 
         public Type ReportType { get; set; }
 
+        async void OnFromDateChanged(DateTime dateTime)
+        {
+            FilterDateFrom = new DateTime(dateTime.Year, dateTime.Month, 1);
+            StateHasChanged();
+        }
+
+        async void OnToDateChanged(DateTime dateTime)
+        {
+            FilterDateTo = dateTime.EndOfMonth();
+            StateHasChanged();
+        }
+
         void DateTimeDateChanged(DateTime? value, string name)
         {
             StateHasChanged();
@@ -62,8 +74,9 @@ namespace MoneyPlan.SPA.Pages
         protected override async Task OnInitializedAsync()
         {
             var today = DateTime.Now;
-            FilterDateTo = new DateTime(today.Year, today.Month, DateTime.DaysInMonth(today.Year, today.Month));
-            FilterDateFrom = FilterDateTo.AddYears(-1);
+            
+            FilterDateTo = today.EndOfMonth();
+            FilterDateFrom = FilterDateTo.AddYears(-1).StartOfMonth();
             FilterAccount = await localStorage.GetItemAsync<int?>("Search.AccountId") ?? null;
             Accounts = await savingsAPI.GetMoneyAccounts();
             IsLoading = false;

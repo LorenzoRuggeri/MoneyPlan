@@ -27,11 +27,11 @@ namespace MoneyPlan.SPA.Pages.Reports
         [CascadingParameter(Name = "FilterAccount")]
         public int? FilterAccount { get; set; }
 
-        public ReportCategory[] Data { get; set; } = Enumerable.Empty<ReportCategory>().ToArray();
+        public ReportCategory[] Source { get; set; } = Enumerable.Empty<ReportCategory>().ToArray();
 
         protected override async Task OnParametersSetAsync()
         {
-            Data = await ClientAPI.GetCategoryResume(FilterAccount, FilterCategoryGroupByPeriod, FilterDateFrom, FilterDateTo);
+            Source = await ClientAPI.GetCategoryResume(FilterAccount, FilterCategoryGroupByPeriod, FilterDateFrom, FilterDateTo);
         }
 
         async Task OpenDetails(long? category, string period)
@@ -51,13 +51,13 @@ namespace MoneyPlan.SPA.Pages.Reports
 
         ReportCategory[] FilterStatisticsResume()
         {
-            var outgoing = Data
+            var outgoing = Source
                 .SelectMany(x => x.Data)
                 .Where(x => x.Amount < 0)
                 .GroupBy(x => x.Period)
                 .Select(x => new ReportPeriodAmount { Period = x.Key, Amount = Math.Abs(x.Sum(y => y.Amount)) });
 
-            var incoming = Data
+            var incoming = Source
                .SelectMany(x => x.Data)
                .Where(x => x.Amount > 0)
                .GroupBy(x => x.Period)

@@ -15,11 +15,11 @@
         </div>
         <div class="col-md-3 col">
             <label>From:</label><br />
-            <RadzenDatePicker @bind-Value="FilterDateFrom" DateFormat="dd/MM/yyyy" Change="@(args => DateTimeDateChanged(args, nameof(FilterDateFrom)))" />
+            <RadzenDatePicker @bind-Value="FilterDateFrom" ShowDays="false" DateFormat="dd/MMM/yyyy" CurrentDateChanged="@(OnFromDateChanged)" />
         </div>
         <div class="col-md-3 col">
             <label>To:</label><br />
-            <RadzenDatePicker @bind-Value="FilterDateTo" DateFormat="dd/MM/yyyy" Change="@(args => DateTimeDateChanged(args, nameof(FilterDateTo)))" />
+            <RadzenDatePicker @bind-Value="FilterDateTo" ShowDays="false" DateFormat="dd/MMM/yyyy" CurrentDateChanged="@(OnToDateChanged)" />
         </div>
         <div class="col-md-3 col">
             <label>Group by:</label>

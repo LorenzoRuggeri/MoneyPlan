@@ -6,28 +6,37 @@
         <thead class="table-dark">
             <tr>
                 <th></th>
-                @foreach (var c in Data)
+                @foreach (var c in Source)
                 {
                     <th>@c.CategoryIcon @c.Category</th>
                 }
             </tr>
-
         </thead>
         <tbody>
-            @foreach (var period in Data.SelectMany(x => x.Data.Select(x => x.Period)).Distinct().OrderByDescending(x => x))
+            @foreach (var period in Source.SelectMany(x => x.Data.Select(x => x.Period)).Distinct().OrderByDescending(x => x))
             {
                 <tr>
                     <td><b>@period</b></td>
-                    @foreach (var c in Data)
+                    @foreach (var c in Source)
                     {
                         var item = c.Data.Where(x => x.Period == period).FirstOrDefault();
                         <td class="item-action text-right" @onclick="@(() => OpenDetails(c.CategoryID,period))">@item?.Amount.ToString("N2")</td>
                     }
                 </tr>
             }
+            <!-- Calculate totals for each category -->
+            <tr>
+                <td><b>Total</b></td>
+                @foreach (var category in Source)
+                {
+                    var total = Math.Abs(category.Data.Sum(x => x.Amount));
+                    <td class="text-center fw-bold">@total.ToString("N2")</td>
+                }
+            </tr>
         </tbody>
     </table>
 </div>
+
 <div class="container">
     <div class="row">
         <div class="col-sm-12 my-5">
