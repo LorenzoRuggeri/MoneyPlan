@@ -12,6 +12,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System;
 using Microsoft.AspNetCore.Components.Web;
 using MoneyPlan.SPA.Pages.Reports;
+using Radzen.Blazor.Rendering;
 
 namespace MoneyPlan.SPA.Pages
 {
