@@ -36,7 +36,7 @@ namespace MoneyPlan.SPA.Pages.Reports
 
         async Task OpenDetails(long? category, string period)
         {
-            var res = await dialogService.OpenAsync<ReportsDetail>($"Report details",
+            var res = await dialogService.OpenAsync<CategoryDetail>($"Report details",
                            new Dictionary<string, object>() {
                                { "account", FilterAccount },
                                { "FilterDateFrom", FilterDateFrom },

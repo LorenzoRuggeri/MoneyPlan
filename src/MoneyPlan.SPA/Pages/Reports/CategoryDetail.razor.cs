@@ -2,9 +2,9 @@
 using Savings.Model;
 using MoneyPlan.SPA.Services;
 
-namespace MoneyPlan.SPA.Pages
+namespace MoneyPlan.SPA.Pages.Reports
 {
-    public partial class ReportsDetail : ComponentBase
+    public partial class CategoryDetail : ComponentBase
     {
 
         [Inject]
@@ -28,7 +28,7 @@ namespace MoneyPlan.SPA.Pages
         [Parameter]
         public int? account { get; set; } = null;
 
-        public ReportDetail[]  ReportCategoryDetails { get; set; }
+        public ReportDetail[] ReportCategoryDetails { get; set; }
 
         protected override async Task OnInitializedAsync()
         {
