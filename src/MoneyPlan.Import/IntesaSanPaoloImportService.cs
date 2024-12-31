@@ -29,7 +29,7 @@ namespace Savings.Import
                 ExcelWorkbook workBook = excelPackage.Workbook;
                 ExcelWorksheet firstWorksheet = workBook.Worksheets[0];
 
-                var rowsToSkip = 20;
+                var rowsToSkip = 3;
                 var rowsToProcess = firstWorksheet.Rows.Skip(rowsToSkip);
 
                 int colCount = firstWorksheet.Dimension.End.Column;
@@ -46,8 +46,9 @@ namespace Savings.Import
                     var amountCell = firstWorksheet.Cells[x, 8];
 
                     // Discard invalid rows
-                    if (dateCell.Value == null || amountCell.Value == null)
-                    {
+                    if (dateCell.Value == null || amountCell.Value == null ||
+                        dateCell.Value?.GetType() != typeof(DateTime))
+                    {                        
                         continue;
                     }
 
