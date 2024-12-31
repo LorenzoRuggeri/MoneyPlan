@@ -116,7 +116,14 @@ namespace Savings.API.Controllers
             {
                 return NotFound();
             }
-            
+
+            // The item is already persisted into Projection; so we need to remove it from Projection before deleting it.
+            var persisted = _context.MaterializedMoneyItems.FirstOrDefault(x => x.FixedMoneyItemID == id);
+            if (persisted != null)
+            {
+                return this.Conflict("Item has been persisted into History. Unlock it from History if you want to delete it.");
+            }
+
             _context.FixedMoneyItems.Remove(fixedMoneyItem);
             await _context.SaveChangesAsync();
 
