@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Savings.Model
 {
     /// <summary>
     /// A projection that has been materialized.
     /// </summary>
+    [DebuggerDisplay("{Amount} - {Date}")]
     public class MaterializedMoneyItem
     {
         public long ID { get; set; }

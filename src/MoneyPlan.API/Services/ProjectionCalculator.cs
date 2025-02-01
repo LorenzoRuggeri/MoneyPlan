@@ -150,17 +150,15 @@ namespace Savings.API.Services
             if (lastEndPeriod != null && includeLastEndPeriod)
                 res.Add(lastEndPeriod);
 
-            //var fromDate = lastEndPeriod?.Date ?? throw new Exception("Unable to define the starting time");
-            var fromDate = (from.HasValue ? from.Value : lastEndPeriod?.Date) ?? throw new Exception("Unable to define the starting time");
+            var fromDate = (from.HasValue ? from.Value : lastEndPeriod?.Date.AddDays(1)) ?? throw new Exception("Unable to define the starting time");
 
-            var periodStart = fromDate.AddDays(1);
-            //var periodStart = new DateTime(fromDate.Year, fromDate.Month, fromDate.Day);
+            var periodStart = fromDate;
             var config = context.Configuration.FirstOrDefault() ?? throw new Exception("Unable to find the configuration");
             DateTime periodEnd;
             bool endPeriodCashCarryUsed = false;
             decimal cashLeftToSpend = 0;
 
-            while ((periodEnd = CalculateNextAccountingPeriod(periodStart, config.EndPeriodRecurrencyType, config.EndPeriodRecurrencyInterval).AddDays(-1)) <= to || periodStart < to)
+            while ((periodEnd = CalculateNextAccountingPeriod(periodStart, config.EndPeriodRecurrencyType, config.EndPeriodRecurrencyInterval)) <= to || periodStart < to)
             {
                 int accumulatorStartingIndex = res.Count;
 
@@ -170,7 +168,7 @@ namespace Savings.API.Services
                 var fixedItemsNotAccumulate = await context.FixedMoneyItems
                                                     .Include(x => x.Category)
                                                     .Where(x => accountId.HasValue ? x.AccountID == accountId : true)
-                                                    .Where(x => x.Date >= periodStart && x.Date <= periodEnd)
+                                                    .Where(x => x.Date.Date >= periodStart && x.Date.Date <= periodEnd)
                                                     .AsNoTracking().ToListAsync();
                 
                 // TODO: Investigare sul come trasformare questa query per poter eliminare gli Adjustements.
@@ -376,8 +374,7 @@ namespace Savings.API.Services
                     */
                     break;
                 case RecurrencyType.Month:
-                    //nextEndPeriod = currentEndPeriod.AddMonths(recurrIterval);
-                    nextEndPeriod = currentEndPeriod.AddMonths(recurrIterval).GetLastDayOfMonth().AddDays(1);
+                    nextEndPeriod = currentEndPeriod.AddMonths(recurrIterval).GetLastDayOfMonth();
                     break;
             }
             return nextEndPeriod;
