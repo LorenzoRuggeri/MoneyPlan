@@ -37,14 +37,17 @@ namespace MoneyPlan.SPA.Pages.Reports
         ReportBudgetPlan[] BudgetPlanResumeByAmount()
         {
             List<ReportBudgetPlan> series = Data.GroupBy(x => new { x.Description, x.TotalPercent })
-                .Select(x => new ReportBudgetPlan()
+                .Select(x =>
                 {
-                    Description = x.Key.Description,
-                    TotalPercent = x.Key.TotalPercent,
-                    Data = x.SelectMany(gp => gp.Data)
+                    return new ReportBudgetPlan()
+                    {
+                        Description = x.Key.Description,
+                        TotalPercent = x.Key.TotalPercent,
+                        Data = x.SelectMany(gp => gp.Data)
                         .Select(x => new ReportPeriodAmountPercent { Amount = Math.Round(Math.Abs(x.Amount)), Period = x.Period, Percent = x.Percent })
                         .OrderBy(x => x.Period)
                         .ToArray()
+                    };
                 }).ToList();
 
             return series.ToArray();

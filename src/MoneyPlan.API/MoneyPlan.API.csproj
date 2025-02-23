@@ -21,4 +21,9 @@
   <ItemGroup>
     <Folder Include="Authentication\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MoneyPlan.API.Tests" />
+  </ItemGroup>
+  
 </Project>

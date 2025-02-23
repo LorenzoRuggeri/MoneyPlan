@@ -4,9 +4,9 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-sm-12 my-5">
+        <div class="col-sm-9 my-5">
             <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
-                <RadzenChart ColorScheme="ColorScheme.Palette">
+                <RadzenChart ColorScheme="ColorScheme.Palette" Style="height: calc(50vh); min-height: 500px;">
                     @foreach (var budgetGroup in BudgetPlanResumeByAmount())
                     {
                         <RadzenStackedColumnSeries Data="@budgetGroup.Data"
@@ -23,12 +23,7 @@
                 </RadzenChart>
             </RadzenColumn>
         </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row">
-        <div class="col-sm-12 my-5">
+        <div class="col-sm-3 my-5 align-content-center">
             <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
                 <RadzenChart ColorScheme="ColorScheme.Palette" SeriesClick="OnClickPie">
                     <RadzenPieSeries Data="@BudgetPlanResumeByPercent()" Title="Revenue" CategoryProperty="Period" ValueProperty="Percent">
@@ -39,7 +34,8 @@
                             </div>
                         </TooltipTemplate>
                         <ChildContent>
-                            <RadzenSeriesDataLabels Visible="true" OffsetX="7" OffsetY="5" />
+                            <RadzenSeriesDataLabels Visible="true" OffsetX="5" OffsetY="0" />
+                            <RadzenLegend Visible="false" />
                         </ChildContent>
                     </RadzenPieSeries>
                 </RadzenChart>

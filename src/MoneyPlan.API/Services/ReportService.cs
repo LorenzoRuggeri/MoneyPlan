@@ -12,12 +12,6 @@ namespace Savings.API.Services
             this.context = context;
         }
 
-        private GroupCategory CreateGroupCategory(long? categoryId)
-        {
-            var categories = GetStructuredCategories();
-            return categories.Where(y => y.ID == categoryId || y.Related.Any(child => child.ID == categoryId)).FirstOrDefault() ?? new GroupCategory() { Description = "<Unspecified>" };
-        }
-
         public IEnumerable<ReportDetail> GetDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details, long? category, string period)
         {
             var categories = GetStructuredCategories();
@@ -78,7 +72,13 @@ namespace Savings.API.Services
             public List<ReportFullDetail> Details { get; set; } = new List<ReportFullDetail>();
         }
 
-        private IEnumerable<GroupCategory> GetStructuredCategories()
+        internal GroupCategory CreateGroupCategory(long? categoryId)
+        {
+            var categories = GetStructuredCategories();
+            return categories.Where(y => y.ID == categoryId || y.Related.Any(child => child.ID == categoryId)).FirstOrDefault() ?? new GroupCategory() { Description = "<Unspecified>" };
+        }
+
+        internal IEnumerable<GroupCategory> GetStructuredCategories()
         {
             return this.context.MoneyCategories.GroupBy(x => x.ParentId.HasValue ? x.ParentId : x.ID)
                 .ToList()

@@ -9,7 +9,7 @@ namespace MoneyPlan.Model.API.Report
     {
         public string Description { get; set; }
 
-        public decimal TotalPercent { get; set; }
+        public double TotalPercent { get; set; }
 
         public ReportPeriodAmountPercent[] Data { get; set; }
     }

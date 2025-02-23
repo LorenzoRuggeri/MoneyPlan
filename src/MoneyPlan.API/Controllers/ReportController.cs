@@ -9,6 +9,8 @@ using Microsoft.Identity.Client;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using MoneyPlan.Model.API.Report;
 using MoneyPlan.Business;
+using System.Linq;
+using System.Numerics;
 
 namespace Savings.API.Controllers
 {
@@ -75,15 +77,15 @@ namespace Savings.API.Controllers
             foreach (var rule in orderedRules)
             {
                 var partialNeeds = orphans.Where(item => filter(rule, item) && rule.Type == BudgetPlanType.Needs).ToList();
-                needs.AddRange(partialNeeds);
+                needs.AddRange(partialNeeds.Select(x => { x.Amount = Math.Abs(x.Amount); return x; }));
                 orphans = orphans.Except(partialNeeds).ToList();
 
                 var partialWants = orphans.Where(item => filter(rule, item) && rule.Type == BudgetPlanType.Wants).ToList();
-                wants.AddRange(partialWants);
+                wants.AddRange(partialWants.Select(x => { x.Amount = Math.Abs(x.Amount); return x; }));
                 orphans = orphans.Except(partialWants).ToList();
 
                 var partialSavings = orphans.Where(item => filter(rule, item) && rule.Type == BudgetPlanType.Savings).ToList();
-                savings.AddRange(partialSavings);
+                savings.AddRange(partialSavings.Select(x => { x.Amount = Math.Abs(x.Amount); return x; }));
                 orphans = orphans.Except(partialSavings).ToList();
 
                 // If we correctly distribuited all data, we can exit.
@@ -91,113 +93,110 @@ namespace Savings.API.Controllers
                     break;
             }
 
-            var total = income.Sum(x => x.Amount);
-            var spent = needs.Union(wants).Union(savings).Union(orphans).Sum(x => Math.Abs(x.Amount));
-            var needsPercent = Math.Round((needs.Sum(x => x.Amount) / total) * 100, 2);
-            var wantsPercent = Math.Round((wants.Sum(x => x.Amount) / total) * 100, 2);
-            var savingsPercent = Math.Round((savings.Sum(x => x.Amount) / total) * 100, 2);
-            var undefinedPercent = Math.Round((orphans.Sum(x => x.Amount) / total) * 100, 2);
+            // Tutto diviso in base ai periodi.
+            // Le percentuali totali, per il grafico a torta, ce ne occuperemo solo dopo.
 
-            var cashFlow = total - spent;
-            var cashFlowPercent = Math.Round((cashFlow / total) * 100, 2);
-
-            var incomePeriodPercents = income.GroupBy(x => x.Date.ToString(periodPattern))
+            var incomePeriod = income.GroupBy(x => x.Date.ToString(periodPattern))
                 .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) });
 
             // Function to retrieve the relative percentage against the income.
-            Func<IGrouping<string, MaterializedMoneyItem>, double> FindPercent = (periodGroup) =>
+            Func<IGrouping<string, MaterializedMoneyItem>, double> FindPercentByGroup = (periodGroup) =>
             {
-                var found = incomePeriodPercents.FirstOrDefault(inc => inc.Period == periodGroup.Key);
+                var found = incomePeriod.FirstOrDefault(inc => inc.Period == periodGroup.Key);
                 if (found == null)
                     return 0;
                 return Math.Abs(Math.Round(((double)periodGroup.Sum(y => y.Amount) / found.Amount) * 100, 2));
             };
 
-            Func<IEnumerable<ReportPeriodAmountPercent>> CalculateLiquidityForPeriod = () =>
+            Func<ReportPeriodAmountPercent, double> FindPercent = (periodGroup) =>
             {
-                var spentByPeriod = savings.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    })
-               .Union(wants.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    }))
-                .Union(needs.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    }))
-                .Union(orphans.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    }));
-
-                return spentByPeriod.GroupBy(x => x.Period)
-                    .Select(x =>
-                    {
-                        var incomePartial = incomePeriodPercents.FirstOrDefault(inc => inc.Period == x.Key);
-                        var incomeAmount = (incomePartial?.Amount ?? 0);
-                        var spentPartial = Math.Abs(x.Sum(item => item.Amount));
-                        var spentAmount = incomeAmount - spentPartial;
-                        var result = new ReportPeriodAmountPercent()
-                        {
-                            Period = x.Key,
-                            Amount = spentAmount,
-                            Percent = Math.Round((spentAmount / incomeAmount) * 100, 2)
-                        };
-                        return result;
-                    })
-                    .Where(x => x.Percent > 0);     // Excluding not displayable values.
+                var found = incomePeriod.FirstOrDefault(inc => inc.Period == periodGroup.Period);
+                if (found == null)
+                    return 0;
+                return Math.Abs(Math.Round(((double)periodGroup.Amount / found.Amount) * 100, 2));
             };
+
+            Func<IGrouping<string, ReportPeriodAmountPercent>, double> FindPercentByGroupV2 = (periodGroup) =>
+            {
+                var found = incomePeriod.FirstOrDefault(inc => inc.Period == periodGroup.Key);
+                if (found == null)
+                    return 0;
+                return Math.Abs(Math.Round(((double)periodGroup.Sum(y => y.Amount) / found.Amount) * 100, 2));
+            };
+
+            var spentPeriod = needs.Union(wants).Union(orphans).GroupBy(x => x.Date.ToString(periodPattern))
+                .Select(x =>
+                {
+                    // NOTE: devo avere tutti valori positivi, altrimenti la somma non produce gli effetti desiderati.
+                    var negativeValues = x.Any(y => y.Amount < 0);
+                    var positiveValues = x.Any(y => y.Amount >= 0);
+
+                    return new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) };
+                });
+
+            // NOTE: Dall'income dovrei prima sottrarre quello che e' classificato come saving, cosi facendo ottengo la liquidità residua.
+            //       La liquidità residua concorre a formare quanto ho realmente avuto come saving.
+            var planSavings = savings.GroupBy(x => x.Date.ToString(periodPattern))
+                .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) });
+
+            var savingsPeriod = incomePeriod.Join(planSavings, x => x.Period, y => y.Period,
+                (x, y) =>
+                {
+                    var liquidity = x.Amount - y.Amount;
+                    return new ReportPeriodAmountPercent() { Period = x.Period, Amount = liquidity > 0 ? liquidity : 0 };
+                })
+                .Join(spentPeriod, x => x.Period, y => y.Period,
+                (x, y) =>
+                {
+                    var saved = x.Amount - y.Amount;
+                    return new ReportPeriodAmountPercent() { Period = x.Period, Amount = saved > 0 ? saved : 0 };
+                })
+                .Join(planSavings, x => x.Period, y => y.Period,
+                (x, y) =>
+                {
+                    var effectiveSaving = x.Amount + y.Amount;
+                    return new ReportPeriodAmountPercent() { Period = x.Period, Amount = effectiveSaving };
+                }).
+                // Calculate relative percent
+                Select(x => new ReportPeriodAmountPercent() { Period = x.Period, Amount = x.Amount, Percent = FindPercent(x) });
+
+            var totalIncome = (decimal)income.Sum(x => x.Amount);
+
+            // Functions for total percent against total income
+            double FindTotalPercentInDecimal<T>(IEnumerable<T> source, Func<T, decimal> expression)
+            {
+                return Math.Abs(Math.Round((double)(source.Sum(expression) / totalIncome) * 100, 2));
+            }
+
+            double FindTotalPercentInDouble<T>(IEnumerable<T> source, Func<T, double> expression)
+            {
+                return Math.Abs(Math.Round((source.Sum(expression) / (double)totalIncome) * 100, 2));
+            }
+
+
 
             List<ReportBudgetPlan> list = new List<ReportBudgetPlan>();
             list.Add(new ReportBudgetPlan()
             {
                 Description = "Needs",
-                TotalPercent = needsPercent,
+                TotalPercent = FindTotalPercentInDecimal(needs, x => x.Amount),
                 Data = needs.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
+                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercentByGroup(x) }).ToArray()
             });
             list.Add(new ReportBudgetPlan()
             {
                 Description = "Wants",
-                TotalPercent = wantsPercent,
-                Data = wants.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
+                TotalPercent = FindTotalPercentInDecimal(wants.Union(orphans), x => x.Amount),
+                Data = wants.Union(orphans).GroupBy(x => x.Date.ToString(periodPattern))
+                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercentByGroup(x) }).ToArray()
             });
             list.Add(new ReportBudgetPlan()
             {
                 Description = "Savings",
-                TotalPercent = savingsPercent,
-                Data = savings.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
-            });
-            list.Add(new ReportBudgetPlan()
-            {
-                Description = "T.B.D.",
-                TotalPercent = undefinedPercent,
-                Data = orphans.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
+                TotalPercent = FindTotalPercentInDouble(savingsPeriod, x => x.Amount),
+                Data = savingsPeriod.ToArray()
             });
 
-            var liquidityData = CalculateLiquidityForPeriod();
-            if (liquidityData.Any())
-            {
-                list.Add(new ReportBudgetPlan()
-                {
-                    Description = "Liquidity",
-                    TotalPercent = Math.Abs(cashFlowPercent),
-                    Data = liquidityData.ToArray()
-                });
-            }
 
             return list.ToArray();
         }
