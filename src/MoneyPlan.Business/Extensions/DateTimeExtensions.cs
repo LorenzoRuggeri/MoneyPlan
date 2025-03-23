@@ -1,4 +1,4 @@
-﻿namespace Savings.API.Extensions
+﻿namespace MoneyPlan.Business
 {
     public static class DateTimeExtensions
     {

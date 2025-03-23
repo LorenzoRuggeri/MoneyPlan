@@ -51,6 +51,7 @@ namespace MoneyPlan.API.Tests.Controllers
                 var result = response.Value;
                 Assert.That(result.Count(), Is.EqualTo(3));
 
+                Assert.Fail("Il terzo gruppo, Savings, deve avere un entry con il totale degli Income. Perche' non c'e'?");
             }
         }
 

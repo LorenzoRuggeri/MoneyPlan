@@ -11,6 +11,7 @@ using MoneyPlan.Model.API.Report;
 using MoneyPlan.Business;
 using System.Linq;
 using System.Numerics;
+using MoneyPlan.Business;
 
 namespace Savings.API.Controllers
 {
@@ -99,6 +100,10 @@ namespace Savings.API.Controllers
             var incomePeriod = income.GroupBy(x => x.Date.ToString(periodPattern))
                 .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) });
 
+            // To identify how many groups I should have.
+            var periodGroups = DateHelper.GetMonthsBetween(dateFrom, dateTo.AddMonths(1)).GroupBy(x => x.Date.ToString(periodPattern))
+                .Select(x => x.Key);
+
             // Function to retrieve the relative percentage against the income.
             Func<IGrouping<string, MaterializedMoneyItem>, double> FindPercentByGroup = (periodGroup) =>
             {
@@ -137,7 +142,22 @@ namespace Savings.API.Controllers
             // NOTE: Dall'income dovrei prima sottrarre quello che e' classificato come saving, cosi facendo ottengo la liquidità residua.
             //       La liquidità residua concorre a formare quanto ho realmente avuto come saving.
             var planSavings = savings.GroupBy(x => x.Date.ToString(periodPattern))
-                .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) });
+                .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) })
+                .ToList();
+            // Fill empty spots, to be sure a group exists so a Join is always performed.
+            //if (!planSavings.Any())
+            //{                
+            //planSavings = new List<ReportPeriodAmountPercent>(periodGroups.Count());
+            foreach (var period in periodGroups)
+            {
+                if (!planSavings.Exists(x => x.Period == period))
+                {
+                    planSavings.Add(new ReportPeriodAmountPercent() { Period = period, Amount = 0 });
+                }
+            }
+            //}
+
+
 
             var savingsPeriod = incomePeriod.Join(planSavings, x => x.Period, y => y.Period,
                 (x, y) =>
