@@ -40,6 +40,8 @@ namespace MoneyPlan.SPA.Pages
         /// </summary>
         public bool FilterInvalid { get; set; }
 
+        public bool FilterCash { get; set; }
+
         public int? FilterAccount { get; set; } = null;
 
         public MoneyCategory[] Categories { get; set; }
@@ -103,6 +105,14 @@ namespace MoneyPlan.SPA.Pages
             StateHasChanged();
         }
 
+        async Task ToogleCash(bool toogle)
+        {
+            FilterCash = toogle;
+
+            await InitializeList();
+            StateHasChanged();
+        }
+
         async void OnAccountChanged(object accountId)
         {
             await localStorage.SetItemAsync("Search.AccountId", FilterAccount);
@@ -118,6 +128,10 @@ namespace MoneyPlan.SPA.Pages
             {
                 results = FilterByInvalid(results).ToArray();
             }
+            if (FilterCash)
+            {
+                results = FilterByCash(results).ToArray();
+            }
             if (!string.IsNullOrEmpty(FilterNotes))
             {
                 results = FilterByNotes(results).ToArray();
@@ -130,12 +144,11 @@ namespace MoneyPlan.SPA.Pages
             fixedMoneyItems = results;
         }
 
-
         async Task AddNew()
         {
             bool? res = await dialogService.OpenAsync<FixedItemEdit>($"Add new",
-                         new Dictionary<string, object>() { 
-                             { "fixedItemToEdit", new Savings.Model.FixedMoneyItem() }, 
+                         new Dictionary<string, object>() {
+                             { "fixedItemToEdit", new Savings.Model.FixedMoneyItem() },
                              { "isNew", true },
                              { "AccountID", FilterAccount }
                          },
@@ -165,11 +178,21 @@ namespace MoneyPlan.SPA.Pages
         }
 
 
-        private Func<IEnumerable<FixedMoneyItem>, IEnumerable<FixedMoneyItem>> FilterByInvalid = (list) => list.Where(item => !item.CategoryID.HasValue);
+        private Func<IEnumerable<FixedMoneyItem>, IEnumerable<FixedMoneyItem>> FilterByInvalid = (list) =>
+        {
+            // NOTE: We're identyfing an invalid entry based on the following conditions.
+            return list.Where(item => !item.CategoryID.HasValue);
+        };
 
         private IEnumerable<FixedMoneyItem> FilterByNotes(IEnumerable<FixedMoneyItem> list)
         {
             return list.Where(item => item.Note.Contains(FilterNotes, StringComparison.OrdinalIgnoreCase));
+        }
+
+
+        private IEnumerable<FixedMoneyItem> FilterByCash(IEnumerable<FixedMoneyItem> list)
+        {
+            return list.Where(x => x.Cash);
         }
 
     }
