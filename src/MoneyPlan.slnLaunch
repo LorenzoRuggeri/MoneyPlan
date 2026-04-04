@@ -1,0 +1,16 @@
+[
+  {
+    "Name": "Dev Full Stack",
+    "Projects": [
+      {
+        "Path": "MoneyPlan.API\\MoneyPlan.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "MoneyPlan.SPA\\MoneyPlan.SPA.csproj",
+        "Action": "Start",
+        "LaunchProfile": "MoneyPlan.SPA"
+      }
+    ]
+  }
+]

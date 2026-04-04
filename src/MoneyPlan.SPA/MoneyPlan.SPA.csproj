@@ -8,9 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.18" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.18" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Authentication.WebAssembly.Msal" Version="8.0.18" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="5.2.5" />
     <PackageReference Include="Refit" Version="7.0.0" />
@@ -25,4 +25,44 @@
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="wwwroot\web.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!--
+  BASE HREF INJECTION
+  
+  Sostituisce il token #{BASE_HREF}# in index.html con il valore della proprietà
+  <BaseHref> definita nel PublishProfile (.pubxml) attivo al momento della publish.
+  
+  La proprietà <BaseHref> va impostata in ogni PublishProfile:
+    <BaseHref>/MoneyPlan/</BaseHref>         → https://example.com/MoneyPlan/
+    <BaseHref>/Apps/MoneyPlan/</BaseHref>    → https://example.com/Apps/MoneyPlan/
+    <BaseHref>/</BaseHref>                   → https://localhost:44444/
+  
+  In sviluppo (nessuna publish) il token #{BASE_HREF}# rimane nell'HTML,
+  il fallback JavaScript in index.html lo sostituisce con "/" a runtime.
+  
+  NON modificare index.html manualmente — il token #{BASE_HREF}# deve rimanere intatto.
+  -->
+  <PropertyGroup Label="BasreHref per sviluppo">
+    <BaseHref Condition="'$(BaseHref)' == ''">/</BaseHref>
+  </PropertyGroup>
+  
+  <Target Name="UpdateBaseHref" AfterTargets="Publish">
+    <PropertyGroup>
+      <IndexHtmlPath>$(PublishDir)wwwroot/index.html</IndexHtmlPath>
+      <IndexHtmlContent>$([System.IO.File]::ReadAllText('$(IndexHtmlPath)'))</IndexHtmlContent>
+      <IndexHtmlContent>$(IndexHtmlContent.Replace('#{BASE_HREF}#', '$(BaseHref)'))</IndexHtmlContent>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(IndexHtmlPath)"
+      Lines="$(IndexHtmlContent)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+    <Message Text="✅ Base href impostato a: $(BaseHref)" Importance="high" />
+  </Target>
+
 </Project>
