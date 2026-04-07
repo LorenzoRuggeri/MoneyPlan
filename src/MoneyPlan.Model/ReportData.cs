@@ -30,8 +30,12 @@ namespace Savings.Model
         public string Description { get; set; }
     }
 
-    public class ReportFullDetail
+    public class ReportCategoryRow
     {
+        /// <summary>
+        /// Used to tell if it comes from a Projection or a Materialized
+        /// </summary>
+        /// <remarks>No meaning except for internal use</remarks>
         public string Type { get; set; }
 
         public long ID { get; set; }

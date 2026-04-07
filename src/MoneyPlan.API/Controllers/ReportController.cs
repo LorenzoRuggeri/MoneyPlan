@@ -6,9 +6,12 @@ using Savings.Model;
 using System.Linq.Expressions;
 using Savings.API.Services;
 using Microsoft.Identity.Client;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using MoneyPlan.Model.API.Report;
 using MoneyPlan.Business;
+using System.Linq;
+using System.Numerics;
+using MoneyPlan.Model;
+using MoneyPlan.Application.Abstractions.Models.Report;
+using MoneyPlan.Application.Abstractions.Budgeting;
 
 namespace Savings.API.Controllers
 {
@@ -17,195 +20,32 @@ namespace Savings.API.Controllers
     public class ReportController : ControllerBase
     {
         private readonly SavingsContext _context;
+        private readonly IBudgetPlanCalculator budgetPlanCalc;
         private readonly IProjectionCalculator calculator;
         private readonly ReportService reportService;
 
-        public ReportController(IProjectionCalculator calculator, ReportService reportService, SavingsContext context)
+        public ReportController(IProjectionCalculator calculator, ReportService reportService, SavingsContext context, IBudgetPlanCalculator budgetPlanCalc)
         {
             _context = context;
+            this.budgetPlanCalc = budgetPlanCalc;
             this.calculator = calculator;
             this.reportService = reportService;
         }
 
         [HttpGet("GetBudgetPlanResume")]
-        public async Task<ActionResult<ReportBudgetPlan[]>> GetBudgetPlanResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
+        public async Task<ActionResult<ReportBudgetPlanType[]>> GetBudgetPlanResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
         {
             var projectionItems = (await calculator.CalculateAsync(accountId, dateFrom, dateTo, null, false, false))
                 .Where(x => x.EndPeriod == false);
 
-            Func<BudgetPlanRule, MaterializedMoneyItem, bool> filter = (rule, moneyItem) =>
-            {
-                if (moneyItem.Amount >= 0)
-                {
-                    return false;
-                }
-                else if (!string.IsNullOrEmpty(rule.CategoryText) && rule.CategoryId == moneyItem.CategoryID)
-                {
-                    if (rule.CategoryFilter == StringFilterType.Contains)
-                        return moneyItem.Note.Contains(rule.CategoryText, StringComparison.OrdinalIgnoreCase);
-                    else if (rule.CategoryFilter == StringFilterType.Equals)
-                        return moneyItem.Note.Equals(rule.CategoryText, StringComparison.OrdinalIgnoreCase);
-                }
-                else if (rule.CategoryId == moneyItem.CategoryID)
-                {
-                    return true;
-                }
-                return false;
-            };
-
-            var budgetPlan = _context.BudgetPlans.FirstOrDefault();
-            List<MaterializedMoneyItem> income = new List<MaterializedMoneyItem>();
-            List<MaterializedMoneyItem> needs = new List<MaterializedMoneyItem>();
-            List<MaterializedMoneyItem> wants = new List<MaterializedMoneyItem>();
-            List<MaterializedMoneyItem> savings = new List<MaterializedMoneyItem>();
-            List<MaterializedMoneyItem> orphans = new List<MaterializedMoneyItem>(projectionItems);
-
-            // Order by rules, to be sure they properly catch the items they tends to.
-            var orderedRules = _context.RelationshipBudgetPlanToRules
-                .Include(x => x.BudgetPlanRule)
-                .Select(x => x.BudgetPlanRule)
-                .OrderBy(x => x.CategoryId)
-                //.ThenByDescending(x => x.CategoryFilter)
-                .ToList();
-
-            var incomePartial = orphans.Where(item => item.Amount >= 0).ToList();
-            income.AddRange(incomePartial);
-            orphans = orphans.Except(incomePartial).ToList();
-
-            foreach (var rule in orderedRules)
-            {
-                var partialNeeds = orphans.Where(item => filter(rule, item) && rule.Type == BudgetPlanType.Needs).ToList();
-                needs.AddRange(partialNeeds);
-                orphans = orphans.Except(partialNeeds).ToList();
-
-                var partialWants = orphans.Where(item => filter(rule, item) && rule.Type == BudgetPlanType.Wants).ToList();
-                wants.AddRange(partialWants);
-                orphans = orphans.Except(partialWants).ToList();
-
-                var partialSavings = orphans.Where(item => filter(rule, item) && rule.Type == BudgetPlanType.Savings).ToList();
-                savings.AddRange(partialSavings);
-                orphans = orphans.Except(partialSavings).ToList();
-
-                // If we correctly distribuited all data, we can exit.
-                if (!orphans.Any())
-                    break;
-            }
-
-            var total = income.Sum(x => x.Amount);
-            var spent = needs.Union(wants).Union(savings).Union(orphans).Sum(x => Math.Abs(x.Amount));
-            var needsPercent = Math.Round((needs.Sum(x => x.Amount) / total) * 100, 2);
-            var wantsPercent = Math.Round((wants.Sum(x => x.Amount) / total) * 100, 2);
-            var savingsPercent = Math.Round((savings.Sum(x => x.Amount) / total) * 100, 2);
-            var undefinedPercent = Math.Round((orphans.Sum(x => x.Amount) / total) * 100, 2);
-
-            var cashFlow = total - spent;
-            var cashFlowPercent = Math.Round((cashFlow / total) * 100, 2);
-
-            var incomePeriodPercents = income.GroupBy(x => x.Date.ToString(periodPattern))
-                .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount) });
-
-            // Function to retrieve the relative percentage against the income.
-            Func<IGrouping<string, MaterializedMoneyItem>, double> FindPercent = (periodGroup) =>
-            {
-                var found = incomePeriodPercents.FirstOrDefault(inc => inc.Period == periodGroup.Key);
-                if (found == null)
-                    return 0;
-                return Math.Abs(Math.Round(((double)periodGroup.Sum(y => y.Amount) / found.Amount) * 100, 2));
-            };
-
-            Func<IEnumerable<ReportPeriodAmountPercent>> CalculateLiquidityForPeriod = () =>
-            {
-                var spentByPeriod = savings.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    })
-               .Union(wants.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    }))
-                .Union(needs.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    }))
-                .Union(orphans.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent()
-                    {
-                        Period = x.Key,
-                        Amount = (double)x.Sum(y => y.Amount)
-                    }));
-
-                return spentByPeriod.GroupBy(x => x.Period)
-                    .Select(x =>
-                    {
-                        var incomePartial = incomePeriodPercents.FirstOrDefault(inc => inc.Period == x.Key);
-                        var incomeAmount = (incomePartial?.Amount ?? 0);
-                        var spentPartial = Math.Abs(x.Sum(item => item.Amount));
-                        var spentAmount = incomeAmount - spentPartial;
-                        var result = new ReportPeriodAmountPercent()
-                        {
-                            Period = x.Key,
-                            Amount = spentAmount,
-                            Percent = Math.Round((spentAmount / incomeAmount) * 100, 2)
-                        };
-                        return result;
-                    })
-                    .Where(x => x.Percent > 0);     // Excluding not displayable values.
-            };
-
-            List<ReportBudgetPlan> list = new List<ReportBudgetPlan>();
-            list.Add(new ReportBudgetPlan()
-            {
-                Description = "Needs",
-                TotalPercent = needsPercent,
-                Data = needs.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
-            });
-            list.Add(new ReportBudgetPlan()
-            {
-                Description = "Wants",
-                TotalPercent = wantsPercent,
-                Data = wants.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
-            });
-            list.Add(new ReportBudgetPlan()
-            {
-                Description = "Savings",
-                TotalPercent = savingsPercent,
-                Data = savings.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
-            });
-            list.Add(new ReportBudgetPlan()
-            {
-                Description = "T.B.D.",
-                TotalPercent = undefinedPercent,
-                Data = orphans.GroupBy(x => x.Date.ToString(periodPattern))
-                    .Select(x => new ReportPeriodAmountPercent() { Period = x.Key, Amount = (double)x.Sum(y => y.Amount), Percent = FindPercent(x) }).ToArray()
-            });
-
-            var liquidityData = CalculateLiquidityForPeriod();
-            if (liquidityData.Any())
-            {
-                list.Add(new ReportBudgetPlan()
-                {
-                    Description = "Liquidity",
-                    TotalPercent = Math.Abs(cashFlowPercent),
-                    Data = liquidityData.ToArray()
-                });
-            }
-
-            return list.ToArray();
+            var groups = budgetPlanCalc.GroupByBudgetTypes(projectionItems, periodPattern);
+            return groups.ToArray();
         }
 
         [HttpGet("GetCategoryResumeDetail")]
         public async Task<ActionResult<ReportDetail[]>> GetCategoryResumeDetail(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period)
         {
-            IEnumerable<ReportFullDetail> details = await GetCategoryDetailsAsync(accountId, periodPattern, dateFrom, dateTo);
+            IEnumerable<ReportCategoryRow> details = await GetCategoryDetailsAsync(accountId, periodPattern, dateFrom, dateTo);
 
             var res = reportService.GetDetailsGroupedByCategory(details, category, period);
 
@@ -222,7 +62,7 @@ namespace Savings.API.Controllers
         public async Task<ActionResult<ReportCategory[]>> GetCategoryResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
         {
             var categories = _context.MoneyCategories.ToList();
-            IEnumerable<ReportFullDetail> union = await GetCategoryDetailsAsync(accountId, periodPattern, dateFrom, dateTo);
+            IEnumerable<ReportCategoryRow> union = await GetCategoryDetailsAsync(accountId, periodPattern, dateFrom, dateTo);
 
             // TODO: move this logic to a service that will be used elsewhere; while interacting MoneyCategories this should be the behaviour
             //       we want.
@@ -275,7 +115,7 @@ namespace Savings.API.Controllers
             */
         }
 
-        private async Task<IEnumerable<ReportFullDetail>> GetCategoryDetailsAsync(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
+        private async Task<IEnumerable<ReportCategoryRow>> GetCategoryDetailsAsync(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo)
         {
             var projectionItems = await calculator.CalculateAsync(accountId, null, dateTo, null, false);
             var withdrawalID = _context.Configuration.FirstOrDefault()?.CashWithdrawalCategoryID;
@@ -284,7 +124,7 @@ namespace Savings.API.Controllers
 
             var projectionItemsFirstLevel = projectionItems
                 .Where(firstLevelPredicate.Compile())
-                .Select(x => new ReportFullDetail { Type = "ProjL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
+                .Select(x => new ReportCategoryRow { Type = "ProjL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
                 .ToList();
 
             var materializedItemsFirstLevel = await _context.MaterializedMoneyItems
@@ -297,7 +137,7 @@ namespace Savings.API.Controllers
                 true)
                 .Where(firstLevelPredicate)
                 .OrderByDescending(x => x.ID)
-                .Select(x => new ReportFullDetail { Type = "MaterL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
+                .Select(x => new ReportCategoryRow { Type = "MaterL1", ID = x.ID, Date = x.Date, Period = x.Date.ToString(periodPattern), Description = x.Note, CategoryID = x.CategoryID, Amount = x.Amount })
                 .ToListAsync();
 
             var union = projectionItemsFirstLevel.Union(materializedItemsFirstLevel);

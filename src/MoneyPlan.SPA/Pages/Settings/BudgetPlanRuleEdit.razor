@@ -1,4 +1,14 @@
-﻿@attribute [Authorize]
+﻿@using MoneyPlan.Model
+@attribute [Authorize]
+
+@if (Model == null)
+{
+    <p>Loading...</p>
+    return;
+}
+else
+{
+
 <EditForm Model="@Model" OnValidSubmit="@OnValidSubmit">
     <DataAnnotationsValidator />
     <div class="row">
@@ -6,7 +16,7 @@
             <label>Type:</label>
             <div>
                 <InputSelect @bind-Value="Model.Type" class="form-control">
-                    @foreach (var value in Enum.GetValues(typeof(Savings.Model.BudgetPlanType)))
+                    @foreach (var value in Enum.GetValues(typeof(BudgetPlanType)))
                     {
                         <option>@value</option>
                     }
@@ -28,7 +38,7 @@
         <div class="col-6">
             <label>Filter:</label>
             <InputSelect @bind-Value="Model.CategoryFilter" class="form-control">
-                @foreach (var value in Enum.GetValues(typeof(Savings.Model.StringFilterType)))
+                @foreach (var value in Enum.GetValues(typeof(StringFilterType)))
                 {
                     <option>@value</option>
                 }
@@ -46,9 +56,13 @@
         <button type="button" class="btn btn-warning" @onclick="@(() => { this.dialogService.Close(false); })">
             <span class="oi oi-reload" aria-hidden="true"></span>CANCEL
         </button>
-        @if (!isNew)
+        @if (Model.Id != default)
         {
-            <button type="button" class="btn btn-danger" @onclick="@(()=>Delete())"><span class="oi oi-trash" aria-hidden="true"></span></button>
+            <button type="button" class="btn btn-danger" @onclick="@(()=>Delete())">
+                <span class="oi oi-trash" aria-hidden="true"></span>
+            </button>
         }
     </div>
 </EditForm>
+
+}

@@ -1,4 +1,4 @@
-﻿@using MoneyPlan.Model.API.Report
+﻿@using MoneyPlan.Application.Abstractions.Models.Report
 
 <h2>Categories</h2>
 <div class="table-responsive">
@@ -29,6 +29,7 @@
                 <td><b>Total</b></td>
                 @foreach (var category in Source)
                 {
+                    // TODO: Qui viene sempre fuori un valore positivo, anche se la somma e' zero.
                     var total = Math.Abs(category.Data.Sum(x => x.Amount));
                     <td class="text-center fw-bold">@total.ToString("N2")</td>
                 }
@@ -37,24 +38,22 @@
     </table>
 </div>
 
-<div class="container">
-    <div class="row">
-        <div class="col-sm-12 my-5">
-            <RadzenChart>
-                <RadzenChartTooltipOptions Shared="true" />
-                @foreach (var category in FilterStatisticsResume())
-                {
-                    <RadzenLineSeries Smooth="false" Data="@category.Data" CategoryProperty="Period" Title="@category.Category" ValueProperty="Amount">
-                        <RadzenMarkers MarkerType="MarkerType.Circle" />
-                        <RadzenSeriesDataLabels Visible="false" />
-                    </RadzenLineSeries>
-                }
-                <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
-                <RadzenValueAxis Formatter="@FormatAsAmount">
-                    <RadzenGridLines Visible="true" />
-                    <RadzenAxisTitle Text="Money" />
-                </RadzenValueAxis>
-            </RadzenChart>
-        </div>
+<div class="row">
+    <div class="col-sm-12 my-5">
+        <RadzenChart Style="height: calc(50vh); min-height: 500px;">
+            <RadzenChartTooltipOptions Shared="true" />
+            @foreach (var category in FilterStatisticsResume())
+            {
+                <RadzenLineSeries Smooth="false" Data="@category.Data" CategoryProperty="Period" Title="@category.Category" ValueProperty="Amount">
+                    <RadzenMarkers MarkerType="MarkerType.Circle" />
+                    <RadzenSeriesDataLabels Visible="false" />
+                </RadzenLineSeries>
+            }
+            <RadzenCategoryAxis Padding="20" Formatter="@FormatAsMonth" />
+            <RadzenValueAxis Formatter="@FormatAsAmount">
+                <RadzenGridLines Visible="true" />
+                <RadzenAxisTitle Text="Money" />
+            </RadzenValueAxis>
+        </RadzenChart>
     </div>
 </div>

@@ -1,5 +1,6 @@
-﻿using MoneyPlan.Model.API;
-using MoneyPlan.Model.API.Report;
+﻿using MoneyPlan.Application.Abstractions.Models.Report;
+using MoneyPlan.Model;
+using MoneyPlan.Model.API;
 using Refit;
 using Savings.Model;
 using System;
@@ -73,7 +74,7 @@ namespace MoneyPlan.SPA.Services
         Task<ReportDetail[]> GetCategoryResumeDetail(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo, long? category, string period);
 
         [Get("/api/Report/GetBudgetPlanResume")]
-        Task<ReportBudgetPlan[]> GetBudgetPlanResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo);
+        Task<IApiResponse<ReportBudgetPlanType[]>> GetBudgetPlanResume(int? accountId, string periodPattern, DateTime dateFrom, DateTime dateTo);
 
         [Post("/api/Import/ImportFromFile")]
         Task ImportFromfile(ImportFileRequest request);
@@ -94,7 +95,13 @@ namespace MoneyPlan.SPA.Services
         Task<IEnumerable<BudgetPlanRule>> GetAnagraphicRules();
 
         [Get("/api/BudgetPlan/{budgetPlanId}/Rules")]
-        Task<IEnumerable<BudgetPlanRule>> GetBudgetPlanRules(int budgetPlanId);
+        Task<IApiResponse<IEnumerable<BudgetPlanRule>>> GetBudgetPlanRules(int budgetPlanId);
+
+        [Get("/api/BudgetPlan/{budgetPlanId}/Rules/Category/{categoryId}")]
+        Task<IApiResponse<IEnumerable<BudgetPlanRule>>> GetRulesForCategory(int budgetPlanId, int categoryId);
+
+        [Get("/api/BudgetPlan/Rules/{id}")]
+        Task<IApiResponse<BudgetPlanRule>> GetBudgetPlanRule(int id);
 
         [Post("/api/BudgetPlan/Rules")]
         Task<int> InsertBudgetPlanRule(BudgetPlanRule model);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyPlan.DAO.Mapping;
+using MoneyPlan.Model;
 using Savings.DAO.Mapping;
 using Savings.Model;
 using System;
@@ -13,6 +14,7 @@ namespace Savings.DAO.Infrastructure
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.EnableSensitiveDataLogging();
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -26,6 +28,7 @@ namespace Savings.DAO.Infrastructure
                 new Configuration { ID = 1, EndPeriodRecurrencyInterval = 1, EndPeriodRecurrencyType = RecurrencyType.Month }
             );
 
+            /*
             modelBuilder.Entity<MoneyCategory>().HasData(
                new MoneyCategory { ID = 1, Description = "Family" },
                     new MoneyCategory { ID = 16, Description = "Food & Groceries", ParentId = 1 },
@@ -66,10 +69,12 @@ namespace Savings.DAO.Infrastructure
                new MoneyCategory { ID = 8, Description = "Salary" }
 
            );
+            */
 
             modelBuilder.Entity<MaterializedMoneyItem>().HasData(
                new MaterializedMoneyItem { ID = 1, Date = DateTime.Now.Date.AddDays(-DateTime.Now.Date.Day), Amount = 0, Type = MoneyType.InstallmentPayment, Projection = 0, EndPeriod = true, Cash = false }
             );
+
         }
 
         public DbSet<MaterializedMoneyItem> MaterializedMoneyItems { get; set; }
@@ -84,8 +89,6 @@ namespace Savings.DAO.Infrastructure
         public DbSet<BudgetPlan> BudgetPlans { get; set; }
 
         public DbSet<BudgetPlanRule> BudgetPlanRules { get; set; }
-
-        public DbSet<BudgetPlanBudgetRules> RelationshipBudgetPlanToRules { get; set; }
 
     }
 }

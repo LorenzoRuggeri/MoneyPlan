@@ -7,9 +7,10 @@ namespace MoneyPlan.SPA.Pages
 {
     public partial class History : ComponentBase
     {
-
+        /*
         [Inject]
-        public ISavingsApi savingsAPI { get; set; }
+        public ISavingsApi ClientAPI { get; set; }
+        */
 
         private MaterializedMoneyItem[] materializedMoneyItems;
 
@@ -34,7 +35,7 @@ namespace MoneyPlan.SPA.Pages
 
         async Task InitializeList()
         {
-            var items = await savingsAPI.GetMaterializedMoneyItems(FilterDateFrom, FilterDateTo, false);
+            var items = await APIClient.GetMaterializedMoneyItems(FilterDateFrom, FilterDateTo, false);
             materializedMoneyItems = items;
         }
 
@@ -43,7 +44,7 @@ namespace MoneyPlan.SPA.Pages
             var res = await dialogService.Confirm($"Do you want to delete the projection to the history until {item.Date:dd/MM/yyyy}?", "Delete the history", new ConfirmOptions() { OkButtonText = "Yes", CancelButtonText = "No" });
             if (res.HasValue && res.Value)
             {
-                await savingsAPI.DeleteMaterializedMoneyItemToHistory(item.ID);
+                await APIClient.DeleteMaterializedMoneyItemToHistory(item.ID);
                 await InitializeList();
             }
         }

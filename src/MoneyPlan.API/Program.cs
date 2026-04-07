@@ -13,6 +13,7 @@ using Savings.Import;
 using MoneyPlan.Business.Importer;
 using MoneyPlan.Import;
 using MoneyPlan.Import.Extensions;
+using MoneyPlan.Application.Extensions;
 
 public class Program
 {
@@ -56,6 +57,7 @@ public class Program
         builder.Services.AddTransient<ReportService>();
         builder.Services.AddTransient<CategoriesService>();
 
+        builder.Services.AddApplicationServices();
         builder.Services.AddImporters();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -146,6 +148,11 @@ public class Program
         using (var scope = app.Services.CreateScope())
         {
             scope.ServiceProvider.GetRequiredService<SavingsContext>()?.Database.EnsureCreated();
+            // ALWAYS apply a migration on Production. We should have already tested it!
+            if (app.Environment.IsProduction())
+            {
+                scope.ServiceProvider.GetRequiredService<SavingsContext>()?.Database.Migrate();
+            }
         }
         app.UseCors("AllowAllOrigin");
 

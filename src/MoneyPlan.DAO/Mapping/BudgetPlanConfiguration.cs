@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Savings.Model;
+using MoneyPlan.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,13 +17,12 @@ namespace MoneyPlan.DAO.Mapping
 
             builder.HasKey(x => x.Id);
 
+            /*
             builder.HasMany(x => x.Rules)
                 .WithOne(x => x.BudgetPlan)
-                .HasForeignKey(x => x.BudgetPlanId);
-                /*
-                .UsingEntity<BudgetPlanBudgetRules>(j =>
-                j.has);
-                */
+                .HasForeignKey(x => x.BudgetPlanId)
+                .IsRequired(false);
+            */
         }
     }
 }

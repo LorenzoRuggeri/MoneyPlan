@@ -8,7 +8,7 @@ namespace Savings.Model
     /// A projection that has been materialized.
     /// </summary>
     [DebuggerDisplay("{Amount} - {Date}")]
-    public class MaterializedMoneyItem
+    public class MaterializedMoneyItem : ICloneable
     {
         public long ID { get; set; }
         public DateTime Date { get; set; }
@@ -40,6 +40,27 @@ namespace Savings.Model
 
         public bool Cash { get; set; }
         public decimal EndPeriodCashCarry { get; set; }
+
+        public object Clone()
+        {
+            return new MaterializedMoneyItem
+            {
+                ID = this.ID,
+                Date = this.Date,
+                Amount = this.Amount,
+                Type = this.Type,
+                CategoryID = this.CategoryID,
+                Note = this.Note,
+                Projection = this.Projection,
+                EndPeriod = this.EndPeriod,
+                TimelineWeight = this.TimelineWeight,
+                IsRecurrent = this.IsRecurrent,
+                RecurrentMoneyItemID = this.RecurrentMoneyItemID,
+                FixedMoneyItemID = this.FixedMoneyItemID,
+                Cash = this.Cash,
+                EndPeriodCashCarry = this.EndPeriodCashCarry
+            };
+        }
     }
 
 }

@@ -17,7 +17,7 @@ namespace Savings.DAO.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
 
-            modelBuilder.Entity("Savings.Model.BudgetPlan", b =>
+            modelBuilder.Entity("MoneyPlan.Model.BudgetPlan", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -40,32 +40,13 @@ namespace Savings.DAO.Migrations
                     b.ToTable("BudgetPlans", (string)null);
                 });
 
-            modelBuilder.Entity("Savings.Model.BudgetPlanBudgetRules", b =>
+            modelBuilder.Entity("MoneyPlan.Model.BudgetPlanRule", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("BudgetPlanId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("BudgetPlanRuleId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BudgetPlanRuleId");
-
-                    b.HasIndex("BudgetPlanId", "BudgetPlanRuleId")
-                        .IsUnique();
-
-                    b.ToTable("BudgetPlanBudgetPlanRule", (string)null);
-                });
-
-            modelBuilder.Entity("Savings.Model.BudgetPlanRule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int?>("BudgetPlanId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int>("CategoryFilter")
@@ -86,6 +67,8 @@ namespace Savings.DAO.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BudgetPlanId");
 
                     b.HasIndex("CategoryId");
 
@@ -219,7 +202,7 @@ namespace Savings.DAO.Migrations
                             ID = 1L,
                             Amount = 0m,
                             Cash = false,
-                            Date = new DateTime(2024, 8, 31, 0, 0, 0, 0, DateTimeKind.Local),
+                            Date = new DateTime(2026, 3, 31, 0, 0, 0, 0, DateTimeKind.Local),
                             EndPeriod = true,
                             EndPeriodCashCarry = 0m,
                             IsRecurrent = false,
@@ -263,144 +246,6 @@ namespace Savings.DAO.Migrations
                     b.HasIndex("ParentId");
 
                     b.ToTable("MoneyCategories");
-
-                    b.HasData(
-                        new
-                        {
-                            ID = 1L,
-                            Description = "Family"
-                        },
-                        new
-                        {
-                            ID = 16L,
-                            Description = "Food & Groceries",
-                            ParentId = 1L
-                        },
-                        new
-                        {
-                            ID = 2L,
-                            Description = "Home"
-                        },
-                        new
-                        {
-                            ID = 17L,
-                            Description = "Mortgage",
-                            ParentId = 2L
-                        },
-                        new
-                        {
-                            ID = 3L,
-                            Description = "Leisure Time"
-                        },
-                        new
-                        {
-                            ID = 18L,
-                            Description = "Restaurant",
-                            ParentId = 3L
-                        },
-                        new
-                        {
-                            ID = 19L,
-                            Description = "Tobacco shop",
-                            ParentId = 3L
-                        },
-                        new
-                        {
-                            ID = 20L,
-                            Description = "Other",
-                            ParentId = 3L
-                        },
-                        new
-                        {
-                            ID = 21L,
-                            Description = "Shows, Concerts & Museums",
-                            ParentId = 3L
-                        },
-                        new
-                        {
-                            ID = 22L,
-                            Description = "Subscriptions",
-                            ParentId = 3L
-                        },
-                        new
-                        {
-                            ID = 4L,
-                            Description = "Transports"
-                        },
-                        new
-                        {
-                            ID = 23L,
-                            Description = "Public Transport",
-                            ParentId = 4L
-                        },
-                        new
-                        {
-                            ID = 24L,
-                            Description = "Car",
-                            ParentId = 4L
-                        },
-                        new
-                        {
-                            ID = 25L,
-                            Description = "Loan",
-                            ParentId = 4L
-                        },
-                        new
-                        {
-                            ID = 26L,
-                            Description = "Fuel",
-                            ParentId = 4L
-                        },
-                        new
-                        {
-                            ID = 5L,
-                            Description = "Financial Trading"
-                        },
-                        new
-                        {
-                            ID = 27L,
-                            Description = "Compravendita titoli",
-                            ParentId = 5L
-                        },
-                        new
-                        {
-                            ID = 28L,
-                            Description = "Subscriptions",
-                            ParentId = 5L
-                        },
-                        new
-                        {
-                            ID = 6L,
-                            Description = "Tech & Information Technologies"
-                        },
-                        new
-                        {
-                            ID = 29L,
-                            Description = "Subscriptions",
-                            ParentId = 6L
-                        },
-                        new
-                        {
-                            ID = 7L,
-                            Description = "Other"
-                        },
-                        new
-                        {
-                            ID = 30L,
-                            Description = "Insurances & Policies",
-                            ParentId = 7L
-                        },
-                        new
-                        {
-                            ID = 31L,
-                            Description = "Duties",
-                            ParentId = 7L
-                        },
-                        new
-                        {
-                            ID = 8L,
-                            Description = "Salary"
-                        });
                 });
 
             modelBuilder.Entity("Savings.Model.RecurrentMoneyItem", b =>
@@ -451,30 +296,17 @@ namespace Savings.DAO.Migrations
                     b.ToTable("RecurrentMoneyItems");
                 });
 
-            modelBuilder.Entity("Savings.Model.BudgetPlanBudgetRules", b =>
+            modelBuilder.Entity("MoneyPlan.Model.BudgetPlanRule", b =>
                 {
-                    b.HasOne("Savings.Model.BudgetPlan", "BudgetPlan")
+                    b.HasOne("MoneyPlan.Model.BudgetPlan", "BudgetPlan")
                         .WithMany("Rules")
-                        .HasForeignKey("BudgetPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("BudgetPlanId");
 
-                    b.HasOne("Savings.Model.BudgetPlanRule", "BudgetPlanRule")
-                        .WithMany("BudgetPlans")
-                        .HasForeignKey("BudgetPlanRuleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("BudgetPlan");
-
-                    b.Navigation("BudgetPlanRule");
-                });
-
-            modelBuilder.Entity("Savings.Model.BudgetPlanRule", b =>
-                {
                     b.HasOne("Savings.Model.MoneyCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId");
+
+                    b.Navigation("BudgetPlan");
 
                     b.Navigation("Category");
                 });
@@ -541,14 +373,9 @@ namespace Savings.DAO.Migrations
                     b.Navigation("MoneyAccount");
                 });
 
-            modelBuilder.Entity("Savings.Model.BudgetPlan", b =>
+            modelBuilder.Entity("MoneyPlan.Model.BudgetPlan", b =>
                 {
                     b.Navigation("Rules");
-                });
-
-            modelBuilder.Entity("Savings.Model.BudgetPlanRule", b =>
-                {
-                    b.Navigation("BudgetPlans");
                 });
 
             modelBuilder.Entity("Savings.Model.FixedMoneyItem", b =>

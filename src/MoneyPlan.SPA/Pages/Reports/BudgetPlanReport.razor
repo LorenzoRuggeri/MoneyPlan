@@ -1,49 +1,53 @@
-﻿@using MoneyPlan.Model.API.Report
+﻿@using MoneyPlan.Application.Abstractions.Models.Report
 
 <h2>Budget Plan</h2>
 
-<div class="container">
-    <div class="row">
-        <div class="col-sm-12 my-5">
-            <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
-                <RadzenChart ColorScheme="ColorScheme.Palette">
-                    @foreach (var budgetGroup in BudgetPlanResumeByAmount())
-                    {
-                        <RadzenStackedColumnSeries Data="@budgetGroup.Data"
-                                                   CategoryProperty="Period" ValueProperty="Percent"
-                                                   Title="@(budgetGroup.Description)">
+<div class="row">
+    <div class="col-sm-9 my-5">
+        <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
+            <RadzenChart ColorScheme="ColorScheme.Palette" Style="height: calc(50vh); min-height: 500px;">
+                @foreach (var budgetGroup in BudgetPlanResumeByAmount())
+                {
+                    <RadzenStackedColumnSeries Data="@budgetGroup.Data"
+                                                CategoryProperty="Period" ValueProperty="Percent"
+                                                Title="@(budgetGroup.Description)">
+                        <ChildContent>
                             <RadzenSeriesDataLabels Visible="true" />
-                        </RadzenStackedColumnSeries>
-                    }
-                    <RadzenColumnOptions Radius="5" />
-                    <RadzenValueAxis Formatter="@FormatAsEUR" Min="0" Step="50">
-                        <RadzenGridLines Visible="true" LineType="LineType.Dashed" />
-                        <RadzenAxisTitle Text="Percent" />
-                    </RadzenValueAxis>
-                </RadzenChart>
-            </RadzenColumn>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <div class="row">
-        <div class="col-sm-12 my-5">
-            <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
-                <RadzenChart ColorScheme="ColorScheme.Palette" SeriesClick="OnClickPie">
-                    <RadzenPieSeries Data="@BudgetPlanResumeByPercent()" Title="Revenue" CategoryProperty="Period" ValueProperty="Percent">
+                        </ChildContent>                        
                         <TooltipTemplate Context="data">
                             <div>
                                 &euro; <span>@data.Amount</span><br />
-                                <strong>@data.Percent  %</strong>
+                                <span>@data.Percent</span>
                             </div>
                         </TooltipTemplate>
-                        <ChildContent>
-                            <RadzenSeriesDataLabels Visible="true" OffsetX="7" OffsetY="5" />
-                        </ChildContent>
-                    </RadzenPieSeries>
-                </RadzenChart>
-            </RadzenColumn>
-        </div>
+                    </RadzenStackedColumnSeries>
+                }
+                <RadzenColumnOptions Radius="5" />
+                <RadzenValueAxis Formatter="@FormatForPercent" Min="0" Step="50">
+                    <RadzenGridLines Visible="true" LineType="LineType.Dashed" />
+                    <RadzenAxisTitle Text="Percent" />
+                </RadzenValueAxis>
+            </RadzenChart>
+        </RadzenColumn>
+    </div>
+    <!-- Chart displaying total for the whole period -->
+    <div class="col-sm-3 my-5 align-content-center">
+        <RadzenColumn Size="12" SizeLG="12" SizeSM="4">
+            <RadzenChart ColorScheme="ColorScheme.Palette" SeriesClick="OnClickPie">
+                <RadzenPieSeries Data="@TotalPieChartData()" Title="Revenue"  CategoryProperty="Description" ValueProperty="TotalPercent">
+                    <TooltipTemplate Context="data">
+                        <div>
+                            &euro; <span>@FormatForAmount(data.TotalAmount)</span><br />
+                            <strong>@FormatForPercent(data.TotalPercent) %</strong>
+                        </div>
+                    </TooltipTemplate>
+                    <ChildContent>
+                        <RadzenSeriesDataLabels Visible="true" OffsetX="5" OffsetY="0" />
+                        <RadzenLegend Visible="false" />
+                    </ChildContent>
+                </RadzenPieSeries>
+                <RadzenValueAxis Formatter="@FormatForPercent" />
+            </RadzenChart>
+        </RadzenColumn>
     </div>
 </div>

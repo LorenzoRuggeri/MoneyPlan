@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Savings.Model;
+using MoneyPlan.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +21,17 @@ namespace MoneyPlan.DAO.Mapping
                 .HasDefaultValue(false)
                 .IsRequired();
 
-            builder.HasMany(x => x.BudgetPlans)
-                .WithOne(x => x.BudgetPlanRule)
-                .HasForeignKey(x => x.BudgetPlanRuleId);
+            /*
+            builder.Property(x => x.BudgetPlanId)
+                .IsRequired(false);
+            */
+            /*
+            builder.HasOne(x => x.BudgetPlan)
+                .WithMany(x => x.Rules)
+                .HasForeignKey(x => x.Id)
+                .HasPrincipalKey(x => x.Id)
+                .IsRequired(false);
+            */
         }
     }
 }

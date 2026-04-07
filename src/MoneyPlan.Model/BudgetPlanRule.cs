@@ -1,20 +1,25 @@
-﻿using MoneyPlan.Model;
+﻿using Savings.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Savings.Model
+namespace MoneyPlan.Model
 {
     /// <summary>
     /// Defines in which <see cref="BudgetPlanType"/> an item (it could be a <see cref="FixedMoneyItem" /> or a <see cref="MaterializedMoneyItem"/> ) falls.<br />
     /// Depending on its Category or on its Notes, for example.<br/>
     /// Each <see cref="BudgetPlanRule"/> will be applied only once, to prevent the same item being added to different <see cref="BudgetPlanType"/>.
     /// </summary>
-    public class BudgetPlanRule : ICloneable<BudgetPlanRule>
+    public class BudgetPlanRule : ICloneable
     {
         public int Id { get; set; }
+
+        public int? BudgetPlanId { get; set; }
+
+        public virtual BudgetPlan BudgetPlan {get;set;}
+
 
         public long? CategoryId { get; set; }
 
@@ -27,6 +32,7 @@ namespace Savings.Model
         /// </summary>
         public string CategoryText { get; set; }
 
+        // TODO: Ma questa perche' l'avevo messa null? Davvero una Rule non ha Type? O mi serviva solo per una Migration?
         public BudgetPlanType? Type {get;set; }
 
         [Obsolete("Proviamo a non utilizzarlo e a considerare che tutto quello di Income va calcolato", false)]
@@ -35,22 +41,17 @@ namespace Savings.Model
         /// </summary>
         public bool Income { get; set; }
 
-        /// <summary>
-        /// Collection of BudgetPlan using this Rule.
-        /// </summary>
-        public virtual IEnumerable<BudgetPlanBudgetRules> BudgetPlans { get; set; }
-
-        public BudgetPlanRule Clone()
+        public object Clone()
         {
             return new BudgetPlanRule()
             {
-                Id = this.Id,
-                Category = this.Category,
-                CategoryFilter = this.CategoryFilter,
-                CategoryId = this.CategoryId,
-                CategoryText = this.CategoryText,
-                Income = this.Income,
-                Type = this.Type
+                Id = Id,
+                Category = Category,
+                CategoryFilter = CategoryFilter,
+                CategoryId = CategoryId,
+                CategoryText = CategoryText,
+                Income = Income,
+                Type = Type
             };
         }
     }
@@ -75,26 +76,13 @@ namespace Savings.Model
 
         public string Name { get; set; }
 
-        public virtual List<BudgetPlanBudgetRules> Rules { get; set; } = new List<BudgetPlanBudgetRules>();
+        public virtual List<BudgetPlanRule> Rules { get; set; } = new List<BudgetPlanRule>();
 
         public int NeedsPercentage { get; set; }
 
         public int WantsPercentage { get; set; }
 
         public int SavingsPercentage { get; set; }
-    }
-
-    public class BudgetPlanBudgetRules
-    {
-        public int Id { get; set; }
-
-        public int BudgetPlanId { get; set; }
-
-        public virtual BudgetPlan BudgetPlan { get; set; }
-
-        public int BudgetPlanRuleId { get; set; }
-
-        public virtual BudgetPlanRule BudgetPlanRule { get; set; }
     }
 
     public enum BudgetPlanType

@@ -7,7 +7,7 @@
 
 ** Finally apply the migrations
 
-> EntityFrameworkCore\Update-Database -Context "SavingsContext" -StartupProject "MoneyPlan.API" -Project "MoneyPlan.DAO"
+> EntityFrameworkCore\Update-Database -Context "SavingsContext" -StartupProject "MoneyPlan.API" -Project "MoneyPlan.DAO" -Verbose
 
 ====================================================
 
@@ -15,3 +15,11 @@
 
 > EntityFrameworkCore\Remove-Migration -Context "SavingsContext" -StartupProject MoneyPlan.API
 
+
+=====================================================
+===                Troubleshooting                ===
+=====================================================
+
+** Check the migrations stil in a pending state
+
+> EntityFrameworkCore\Get-Migration -Context "SavingsContext" -StartupProject "MoneyPlan.API" -Project "MoneyPlan.DAO

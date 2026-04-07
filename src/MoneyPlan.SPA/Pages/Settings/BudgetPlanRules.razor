@@ -10,42 +10,29 @@
                         AllowClear=false Placeholder="Select Budget Plan" Change="@((object x) => OnBudgetPlanChanged(Convert.ToInt32(x)))"></RadzenDropDown>
     </div>
 </div>
-<button class="btn btn-success" @onclick="AddNew">
-    <span class="oi oi-plus" aria-hidden="true"></span>ADD
-</button>
+@*
 <button class="btn btn-success" @onclick="SaveBudgetPlan">
     <span class="oi oi-command" aria-hidden="true"></span>SAVE
 </button>
+*@
 
-<div class="table-responsive-sm">
-    <table class="table table-sm table-striped table-hover mobile-resume">
-        <thead class="table-dark">
-            <tr>
-                <th>Filter</th>
-                <th>Category</th>
-                <th>Type</th>
-                <th>Apply</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Data)
-            {
-                <tr class="item-action" @onclick="@(() => Edit(item))">
-                    <td data-title="Account" class="text-center">
-                        @if (string.IsNullOrEmpty(item.CategoryText))
-                        {
-                            <p><i>No text filter</i></p>
-                        }
-                        else
-                        {
-                            @(item.CategoryFilter.GetDisplayDescription() + " '" + @item.CategoryText + "'")
-                        }
-                        </td>
-                    <td data-title="Category" class="text-center">@(item.Category.Description)</td>
-                    <td data-title="Type">@item.Type</td>
-                    <td @onclick:stopPropagation="true"><RadzenCheckBox @bind-Value="@item.Checked" /></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="row pt-3">
+    <div class="col-md-4 col">
+        <RadzenTree Data=@Data Expand=@OnTreeItemExpand Style="height: auto; width: 100%" Change="@OnTreeItemClick">
+            <RadzenTreeLevel Context="child" TextProperty="Description" ChildrenProperty="Children" HasChildren="@(e => (e as MoneyCategory).Children.Any())" />
+        </RadzenTree>
+    </div>
+
+    <div class="col-md-4 col">
+        <RadzenDataGrid TItem="RuleViewModel" Data="@Rules" RowClick="@OnGridRowClick" RowRender="@OnGridRowDatabind" >
+            <HeaderTemplate>
+                <RadzenButton ButtonStyle="ButtonStyle.Success" Icon="add_circle" Text="Add Rule" Click="@AddRule" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Property="@nameof(RuleViewModel.Filter)" Title="Filter" Frozen="true" Width="160px" />
+                <RadzenDataGridColumn Property="@nameof(RuleViewModel.Description)" Title="Description" Width="160px" />
+                <RadzenDataGridColumn Property="@nameof(RuleViewModel.Type)" Title="Budget Type" Width="200px" />
+            </Columns>
+        </RadzenDataGrid>
+    </div>
 </div>

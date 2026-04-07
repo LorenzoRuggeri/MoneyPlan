@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MoneyPlan.Application.Abstractions.Budgeting;
+using MoneyPlan.Model;
 using Savings.DAO.Infrastructure;
-using Savings.Model;
 
 namespace MoneyPlan.API.Controllers
 {
@@ -11,10 +12,12 @@ namespace MoneyPlan.API.Controllers
     public class BudgetPlanController : ControllerBase
     {
         private readonly SavingsContext _context;
+        private readonly IBudgetPlanService budgetPlanService;
 
-        public BudgetPlanController(SavingsContext context)
+        public BudgetPlanController(SavingsContext context, IBudgetPlanService budgetPlanService)
         {
             _context = context;
+            this.budgetPlanService = budgetPlanService;
         }
 
         [HttpGet("")]
@@ -38,6 +41,7 @@ namespace MoneyPlan.API.Controllers
                 using (var transaction = _context.Database.BeginTransaction())
                 {
                     // Save the rules to be applied to the Budget Plan.
+                    /*
                     await _context.RelationshipBudgetPlanToRules.Where(x => x.BudgetPlanId == id).ExecuteDeleteAsync();
                     await _context.SaveChangesAsync();
                     foreach(var relation in model.Rules)
@@ -45,7 +49,7 @@ namespace MoneyPlan.API.Controllers
                         _context.RelationshipBudgetPlanToRules.Add(relation);
                         await _context.SaveChangesAsync();
                     }
-
+                    */
                     // Clear the model to avoid reference tracking exception.
                     //model.Rules.Clear();
 
@@ -78,10 +82,10 @@ namespace MoneyPlan.API.Controllers
         {
             try
             {
-
-                var ids = await _context.RelationshipBudgetPlanToRules
+                // TODO: Questo e' da cambiare!, prima faceva un altro giro, ora basta consultare BudgetPlanRules.
+                var ids = await _context.BudgetPlanRules
                     .Where(x => x.BudgetPlanId == planId)
-                    .Select(x => x.BudgetPlanRule.Id)
+                    .Select(x => x.Id)
                     .ToListAsync();
 
                 return await _context.BudgetPlanRules.Include(x => x.Category)
@@ -94,6 +98,20 @@ namespace MoneyPlan.API.Controllers
             }
         }
 
+        [HttpGet("{planId}/Rules/Category/{categoryId}")]
+        public ActionResult<IEnumerable<BudgetPlanRule>> GetRulesForCategory(int planId, int categoryId)
+        {
+            return Ok(budgetPlanService.GetRulesForCategory(planId, categoryId));
+        }
+
+        [HttpGet("Rules/{id}")]
+        public ActionResult<BudgetPlanRule> GetBudgetPlanRule(int id)
+        {
+            var item = _context.BudgetPlanRules.FirstOrDefault(x => x.Id == id);
+
+            return Ok(item);
+        }
+
         [HttpPost("Rules")]
         public async Task<ActionResult<int>> CreateBudgetPlanRule(BudgetPlanRule item)
         {
@@ -102,7 +120,6 @@ namespace MoneyPlan.API.Controllers
 
             return Ok(item.Id);
         }
-
 
         [HttpPut("Rules/{id}")]
         public async Task<ActionResult> UpdateBudgetPlanRule(int id, BudgetPlanRule item)
@@ -124,13 +141,6 @@ namespace MoneyPlan.API.Controllers
             if (!_context.BudgetPlanRules.Any(x => x.Id == id))
             {
                 return NotFound("Budget Plan Rule has not been found.");
-            }
-
-            var inUseEntities = _context.BudgetPlans.Include(x => x.Rules)
-                .Where(x => x.Rules.Any(x => x.BudgetPlanRuleId == id));
-            if (inUseEntities.Any())
-            {
-                return this.Conflict($"The Budget Plan Rule is in use on the following Budget Plans {string.Join("; ", inUseEntities.Select(x => x.Name))}");
             }
 
             await _context.BudgetPlanRules.Where(x => x.Id == id).ExecuteDeleteAsync();

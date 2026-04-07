@@ -12,17 +12,13 @@ namespace Savings.API.Services
             this.context = context;
         }
 
-        private GroupCategory CreateGroupCategory(long? categoryId)
-        {
-            var categories = GetStructuredCategories();
-            return categories.Where(y => y.ID == categoryId || y.Related.Any(child => child.ID == categoryId)).FirstOrDefault() ?? new GroupCategory() { Description = "<Unspecified>" };
-        }
-
-        public IEnumerable<ReportDetail> GetDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details, long? category, string period)
+        public IEnumerable<ReportDetail> GetDetailsGroupedByCategory(IEnumerable<ReportCategoryRow> details, long? category, string period)
         {
             var categories = GetStructuredCategories();
 
-            var partial = details.Select(x => new { Category = CreateGroupCategory(x.CategoryID), ReportFullDetail = x });
+            var partial = details.OrderBy(x => x.Date)
+                .Select(x => new { Category = CreateGroupCategory(x.CategoryID), ReportFullDetail = x });
+
             var partial2 = partial.Where(x => x.ReportFullDetail.Period == period && x.Category.HasCategory(category));
             
             var partial3 = partial2.Select(x => new ReportDetail
@@ -39,6 +35,7 @@ namespace Savings.API.Services
                            )
                 .SelectMany(x => x)
                 .Where(x => x.Period == period)
+                .OrderBy(x => x.Date)
                 .Select(x => new ReportDetail { Amount = x.Amount, Date = x.Date, Description = x.Description });
 
             return results;
@@ -47,7 +44,7 @@ namespace Savings.API.Services
 
 
         //public IEnumerable<(GroupCategory category, IEnumerable<ReportFullDetail> details)> GetFullDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details)
-        public IEnumerable<GroupCategoryDetails> GetFullDetailsGroupedByCategory(IEnumerable<ReportFullDetail> details)
+        public IEnumerable<GroupCategoryDetails> GetFullDetailsGroupedByCategory(IEnumerable<ReportCategoryRow> details)
         {
             var categories = GetStructuredCategories();
 
@@ -75,10 +72,16 @@ namespace Savings.API.Services
         public class GroupCategoryDetails
         {
             public GroupCategory GroupCategory { get; set; }
-            public List<ReportFullDetail> Details { get; set; } = new List<ReportFullDetail>();
+            public List<ReportCategoryRow> Details { get; set; } = new List<ReportCategoryRow>();
         }
 
-        private IEnumerable<GroupCategory> GetStructuredCategories()
+        internal GroupCategory CreateGroupCategory(long? categoryId)
+        {
+            var categories = GetStructuredCategories();
+            return categories.Where(y => y.ID == categoryId || y.Related.Any(child => child.ID == categoryId)).FirstOrDefault() ?? new GroupCategory() { Description = "<Unspecified>" };
+        }
+
+        internal IEnumerable<GroupCategory> GetStructuredCategories()
         {
             return this.context.MoneyCategories.GroupBy(x => x.ParentId.HasValue ? x.ParentId : x.ID)
                 .ToList()

@@ -1,0 +1,27 @@
+﻿@using MoneyPlan.SPA.Services
+@inject HttpErrorBus ErrorBus
+@inject NotificationService NotificationService
+@implements IDisposable
+
+@code {
+    protected override void OnInitialized()
+    {
+        ErrorBus.OnHttpError += HandleHttpError;
+    }
+
+    private void HandleHttpError(int statusCode, string path)
+    {
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = $"Errore {statusCode}",
+            Detail = path,
+            Duration = 5000
+        });
+    }
+
+    public void Dispose()
+    {
+        ErrorBus.OnHttpError -= HandleHttpError;
+    }
+}

@@ -1,5 +1,5 @@
 ﻿using MoneyPlan.Business;
-using Savings.API.Extensions;
+using MoneyPlan.Core.Extensions;
 using Savings.DAO.Infrastructure;
 using Savings.Model;
 

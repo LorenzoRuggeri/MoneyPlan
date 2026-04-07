@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="7.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MoneyPlan.Business\MoneyPlan.Business.csproj" />
+    <ProjectReference Include="..\MoneyPlan.Application.Abstractions\MoneyPlan.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\MoneyPlan.DAO\MoneyPlan.DAO.csproj" />
   </ItemGroup>
 
 </Project>

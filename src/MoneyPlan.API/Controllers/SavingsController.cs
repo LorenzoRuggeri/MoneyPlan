@@ -10,7 +10,7 @@ namespace Savings.API.Controllers
     public class SavingsController : ControllerBase
     {
         private readonly IProjectionCalculator calculator;
-        public readonly IConfiguration configuration;
+        private readonly IConfiguration configuration;
 
 
         public SavingsController(IProjectionCalculator calculator, IConfiguration configuration)

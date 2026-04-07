@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Money Plan</title>
     <base href="#{BASE_HREF}#" />
-
+    <script>
+        // Fallback solo per sviluppo locale
+        var base = document.getElementsByTagName('base')[0];
+        if (base.getAttribute('href').startsWith('#')) {
+            base.setAttribute('href', '/');
+        }
+    </script>
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link rel="icon" type="image/png" href="favicon.png" />

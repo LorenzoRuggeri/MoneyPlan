@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MoneyPlan.Application.Abstractions\MoneyPlan.Application.Abstractions.csproj" />
+    <ProjectReference Include="..\MoneyPlan.Core\MoneyPlan.Core.csproj" />
+    <ProjectReference Include="..\MoneyPlan.DAO\MoneyPlan.DAO.csproj" />
+    <ProjectReference Include="..\MoneyPlan.Model\MoneyPlan.Model.csproj" />
+  </ItemGroup>
+
+</Project>

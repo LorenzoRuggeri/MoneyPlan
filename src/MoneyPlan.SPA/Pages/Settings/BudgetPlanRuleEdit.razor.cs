@@ -4,15 +4,12 @@ using Radzen;
 using Savings.Model;
 using MoneyPlan.SPA.Services;
 using Radzen.Blazor;
+using MoneyPlan.Model;
 
 namespace MoneyPlan.SPA.Pages.Settings
 {
     public partial class BudgetPlanRuleEdit : ComponentBase
     {
-
-        [Inject]
-        public ISavingsApi savingsAPI { get; set; }
-
         [Inject]
         DialogService dialogService { get; set; }
 
@@ -20,37 +17,31 @@ namespace MoneyPlan.SPA.Pages.Settings
         public NotificationService notificationService { get; set; }
 
         [Parameter]
-        public BudgetPlanRule Model { get; set; }
+        public int Id { get; set; }
 
         [Parameter]
-        public bool isNew { get; set; }
+        public int BudgetPlanId { get; set; }
+
+        public BudgetPlanRule Model { get; set; }
 
         public MoneyCategory[] Categories { get; set; }
 
-        RadzenDropDown<int> accountSelector;
-
-        protected override void OnInitialized()
-        {
-            if (isNew)
-            {
-                this.Model.Type = BudgetPlanType.Needs;
-            }
-        }
-
-        protected override async void OnAfterRender(bool firstRender)
-        {
-            if (firstRender)
-            {
-                if (!isNew)
-                {
-                    accountSelector.Disabled = true;
-                }
-            }
-        }
-
         protected override async Task OnInitializedAsync()
         {
-            Categories = await savingsAPI.GetMoneyCategories();
+            Categories = await APIClient.GetMoneyCategories();
+            if (Id == default)
+            {
+                this.Model = new();
+                this.Model.Type = BudgetPlanType.Needs;
+            }
+            else
+            {
+                var response = await APIClient.GetBudgetPlanRule(Id);
+                if (response.IsSuccessStatusCode)
+                {
+                    Model = response.Content;
+                }
+            }
         }
 
         bool ValidateData()
@@ -59,6 +50,15 @@ namespace MoneyPlan.SPA.Pages.Settings
             {
                 notificationService.Notify(NotificationSeverity.Error, "Attention", "Category is mandatory field");
                 return false;
+            }
+            // If we're being add a new item, we must ensure a BudgetPlan is chosen.
+            if (Model.Id == default)
+            {
+                if (BudgetPlanId == default)
+                {
+                    notificationService.Notify(NotificationSeverity.Error, "Attention", "A new budget rule must be associated to a budget plan");
+                    return false;
+                }
             }
             return true;
         }
@@ -70,7 +70,7 @@ namespace MoneyPlan.SPA.Pages.Settings
             {
                 try
                 {
-                    await savingsAPI.DeleteBudgetPlanRule(Model.Id);
+                    await APIClient.DeleteBudgetPlanRule(Model.Id);
                     this.dialogService.Close(true);
                 }
                 catch(Refit.ApiException ex)
@@ -86,13 +86,14 @@ namespace MoneyPlan.SPA.Pages.Settings
             try
             {
                 if (!ValidateData()) return;
-                if (isNew)
+                if (Model.Id == default)
                 {
-                    await savingsAPI.InsertBudgetPlanRule(Model);
+                    Model.BudgetPlanId = this.BudgetPlanId;
+                    await APIClient.InsertBudgetPlanRule(Model);
                 }
                 else
                 {
-                    await savingsAPI.EditBudgetPlanRule(Model.Id, Model);
+                    await APIClient.EditBudgetPlanRule(Model.Id, Model);
                 }
                 this.dialogService.Close(true);
             }

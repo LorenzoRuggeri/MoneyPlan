@@ -14,6 +14,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MoneyPlan.Application\MoneyPlan.Application.csproj" />
     <ProjectReference Include="..\MoneyPlan.DAO\MoneyPlan.DAO.csproj" />
     <ProjectReference Include="..\MoneyPlan.Import\MoneyPlan.Import.csproj" />
     <ProjectReference Include="..\MoneyPlan.Model\MoneyPlan.Model.csproj" />
@@ -21,4 +22,9 @@
   <ItemGroup>
     <Folder Include="Authentication\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MoneyPlan.API.Tests" />
+  </ItemGroup>
+  
 </Project>

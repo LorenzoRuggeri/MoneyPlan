@@ -19,7 +19,7 @@
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MoneyPlan.Business\MoneyPlan.Business.csproj" />
+    <ProjectReference Include="..\MoneyPlan.Application.Abstractions\MoneyPlan.Application.Abstractions.csproj" />
     <ProjectReference Include="..\MoneyPlan.Model\MoneyPlan.Model.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -57,11 +57,7 @@
       <IndexHtmlContent>$([System.IO.File]::ReadAllText('$(IndexHtmlPath)'))</IndexHtmlContent>
       <IndexHtmlContent>$(IndexHtmlContent.Replace('#{BASE_HREF}#', '$(BaseHref)'))</IndexHtmlContent>
     </PropertyGroup>
-    <WriteLinesToFile
-      File="$(IndexHtmlPath)"
-      Lines="$(IndexHtmlContent)"
-      Overwrite="true"
-      Encoding="UTF-8" />
+    <WriteLinesToFile File="$(IndexHtmlPath)" Lines="$(IndexHtmlContent)" Overwrite="true" Encoding="UTF-8" />
     <Message Text="✅ Base href impostato a: $(BaseHref)" Importance="high" />
   </Target>
 
