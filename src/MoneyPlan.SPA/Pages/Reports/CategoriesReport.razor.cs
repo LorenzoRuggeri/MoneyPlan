@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using MoneyPlan.SPA.Components;
 using MoneyPlan.SPA.Services;
 using Radzen;
 using Radzen.Blazor;
@@ -6,31 +7,16 @@ using Savings.Model;
 
 namespace MoneyPlan.SPA.Pages.Reports
 {
-    public partial class CategoriesReport : ComponentBase
+    public partial class CategoriesReport : SkeletonReport
     {
         [Inject]
-        private ISavingsApi ClientAPI { get; set; }
-
-        [Inject]
         public DialogService dialogService { get; set; }
-
-        [CascadingParameter(Name = "FilterCategoryGroupByPeriod")]
-        public string FilterCategoryGroupByPeriod { get; set; } = "yy/MM";
-
-        [CascadingParameter(Name = "FilterDateFrom")]
-        public DateTime FilterDateFrom { get; set; }
-
-        [CascadingParameter(Name = "FilterDateTo")]
-        public DateTime FilterDateTo { get; set; }
-
-        [CascadingParameter(Name = "FilterAccount")]
-        public int? FilterAccount { get; set; }
 
         public ReportCategory[] Source { get; set; } = Enumerable.Empty<ReportCategory>().ToArray();
 
         protected override async Task OnParametersSetAsync()
         {
-            Source = await ClientAPI.GetCategoryResume(FilterAccount, FilterCategoryGroupByPeriod, FilterDateFrom, FilterDateTo);
+            Source = await APIClient.GetCategoryResume(FilterAccount, FilterPeriodPattern, FilterDateFrom, FilterDateTo);
         }
 
         async Task OpenDetails(long? category, string period)
@@ -41,7 +27,7 @@ namespace MoneyPlan.SPA.Pages.Reports
                                { "FilterDateFrom", FilterDateFrom },
                                { "FilterDateTo", FilterDateTo },
                                { "category", (long?)category },
-                               { "periodPattern", FilterCategoryGroupByPeriod },
+                               { "periodPattern", FilterPeriodPattern },
                                { "period", period }
                            },
                             new DialogOptions() { Width = "800px", Height = "600px" });

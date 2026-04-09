@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MoneyPlan.Application.Abstractions.Models.Report;
+using MoneyPlan.SPA.Components;
 using MoneyPlan.SPA.Services;
 using Radzen;
 using Radzen.Blazor;
@@ -7,26 +8,14 @@ using Refit;
 
 namespace MoneyPlan.SPA.Pages.Reports
 {
-    public partial class BudgetPlanReport : ComponentBase
+    public partial class BudgetPlanReport : SkeletonReport
     {
-        [CascadingParameter(Name = "FilterCategoryGroupByPeriod")]
-        public string FilterCategoryGroupByPeriod { get; set; } = "yy/MM";
-
-        [CascadingParameter(Name = "FilterDateFrom")]
-        public DateTime FilterDateFrom { get; set; }
-
-        [CascadingParameter(Name = "FilterDateTo")]
-        public DateTime FilterDateTo { get; set; }
-
-        [CascadingParameter(Name = "FilterAccount")]
-        public int? FilterAccount { get; set; }
-
         public ReportBudgetPlanType[] Data { get; set; } = Enumerable.Empty<ReportBudgetPlanType>().ToArray();
 
         protected override async Task OnParametersSetAsync()
         {
             var response = await APIClient.GetBudgetPlanResume(FilterAccount,
-                    FilterCategoryGroupByPeriod,
+                    FilterPeriodPattern,
                     FilterDateFrom,
                     FilterDateTo);
             if (response.IsSuccessStatusCode)
@@ -34,7 +23,6 @@ namespace MoneyPlan.SPA.Pages.Reports
                 Data = response.Content;
             }
         }
-
 
         ReportBudgetPlanType[] BudgetPlanResumeByAmount()
         {

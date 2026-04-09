@@ -22,7 +22,7 @@ namespace MoneyPlan.SPA.Pages.Reports
         [Inject]
         public Blazored.LocalStorage.ILocalStorageService localStorage { get; set; }
 
-        public string FilterCategoryGroupByPeriod { get; set; } = "yy/MM";
+        public string FilterPeriodPattern { get; set; } = "yy/MM";
 
         public DateTime FilterDateFrom { get; set; }
 
@@ -53,10 +53,10 @@ namespace MoneyPlan.SPA.Pages.Reports
             StateHasChanged();
         }
 
-        void FilterGroupByCategoryPeriodChanged(ChangeEventArgs e)
+        void FilterPeriodChanged(ChangeEventArgs e)
         {
             var selectedString = e.Value.ToString();
-            FilterCategoryGroupByPeriod = string.IsNullOrWhiteSpace(selectedString) ? null : selectedString;
+            FilterPeriodPattern = string.IsNullOrWhiteSpace(selectedString) ? null : selectedString;
             StateHasChanged();
         }
 

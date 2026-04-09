@@ -23,9 +23,9 @@
         </div>
         <div class="col-md-3 col">
             <label>Group by:</label>
-            <select class="form-control" @onchange="FilterGroupByCategoryPeriodChanged">
-                <option value="yy/MM" selected="@("yy/MM" == FilterCategoryGroupByPeriod)">Month</option>
-                <option value="yyyy" selected="@("yyyy" == FilterCategoryGroupByPeriod)">Year</option>
+            <select class="form-control" @onchange="FilterPeriodChanged">
+                <option value="yy/MM" selected="@("yy/MM" == FilterPeriodPattern)">Month</option>
+                <option value="yyyy" selected="@("yyyy" == FilterPeriodPattern)">Year</option>
             </select>
         </div>
     </div>
@@ -37,19 +37,22 @@
     return;
 }
 
+
 @if (ReportType != null)
 {
     <RadzenButton Text="Back" Click="OnClickBackButton"></RadzenButton>
-    
-    <CascadingValue Name="FilterCategoryGroupByPeriod" Value="@FilterCategoryGroupByPeriod">
-    <CascadingValue Name="FilterAccount" Value="@FilterAccount">
-    <CascadingValue Name="FilterDateFrom" Value=@FilterDateFrom>
-    <CascadingValue Name="FilterDateTo" Value=@FilterDateTo>
-        <DynamicComponent Type="ReportType"></DynamicComponent>
-    </CascadingValue>
-    </CascadingValue>
-    </CascadingValue>
-    </CascadingValue>
+
+    <div class="pt-2">
+        <CascadingValue Name="FilterPeriodPattern" Value="@FilterPeriodPattern">
+        <CascadingValue Name="FilterAccount" Value="@FilterAccount">
+        <CascadingValue Name="FilterDateFrom" Value=@FilterDateFrom>
+        <CascadingValue Name="FilterDateTo" Value=@FilterDateTo>
+            <DynamicComponent Type="ReportType"></DynamicComponent>
+        </CascadingValue>
+        </CascadingValue>
+        </CascadingValue>
+        </CascadingValue>
+    </div>
     return;
 }
 else
