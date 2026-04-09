@@ -17,12 +17,10 @@ namespace MoneyPlan.DAO.Mapping
 
             builder.HasKey(x => x.Id);
 
-            /*
             builder.HasMany(x => x.Rules)
                 .WithOne(x => x.BudgetPlan)
                 .HasForeignKey(x => x.BudgetPlanId)
-                .IsRequired(false);
-            */
+                .IsRequired(true);
         }
     }
 }

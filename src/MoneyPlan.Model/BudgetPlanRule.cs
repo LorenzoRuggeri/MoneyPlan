@@ -18,7 +18,7 @@ namespace MoneyPlan.Model
 
         public int? BudgetPlanId { get; set; }
 
-        public virtual BudgetPlan BudgetPlan {get;set;}
+        public virtual BudgetPlan BudgetPlan { get; set; }
 
 
         public long? CategoryId { get; set; }
@@ -33,13 +33,7 @@ namespace MoneyPlan.Model
         public string CategoryText { get; set; }
 
         // TODO: Ma questa perche' l'avevo messa null? Davvero una Rule non ha Type? O mi serviva solo per una Migration?
-        public BudgetPlanType? Type {get;set; }
-
-        [Obsolete("Proviamo a non utilizzarlo e a considerare che tutto quello di Income va calcolato", false)]
-        /// <summary>
-        /// If it's true the <see cref="Type"/> should be null.
-        /// </summary>
-        public bool Income { get; set; }
+        public BudgetPlanType? Type { get; set; }
 
         public object Clone()
         {
@@ -50,7 +44,6 @@ namespace MoneyPlan.Model
                 CategoryFilter = CategoryFilter,
                 CategoryId = CategoryId,
                 CategoryText = CategoryText,
-                Income = Income,
                 Type = Type
             };
         }

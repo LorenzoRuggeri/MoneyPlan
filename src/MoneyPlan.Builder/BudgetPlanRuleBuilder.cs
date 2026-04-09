@@ -23,7 +23,6 @@ namespace MoneyPlan.Builder
             return this;
         }
 
-        // TODO: [Claude] Preferisco sempre passare gli Id ai Builder, di modo da non dovermi legare ad avere l'oggetto in mano.
         public IBudgetPlanRuleBuilder WithCategory(long categoryId)
         {
             _entity.CategoryId = categoryId;
@@ -40,13 +39,6 @@ namespace MoneyPlan.Builder
         public IBudgetPlanRuleBuilder WithType(BudgetPlanType type)
         {
             _entity.Type = type;
-            return this;
-        }
-
-        public IBudgetPlanRuleBuilder AsIncome()
-        {
-            _entity.Income = true;
-            _entity.Type = null;
             return this;
         }
 

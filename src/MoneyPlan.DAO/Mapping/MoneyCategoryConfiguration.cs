@@ -1,10 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Savings.Model;
-using System.Reflection.Emit;
-using System;
-using System.Data.Entity.ModelConfiguration;
-using System.Data.Entity;
 
 namespace Savings.DAO.Mapping
 {

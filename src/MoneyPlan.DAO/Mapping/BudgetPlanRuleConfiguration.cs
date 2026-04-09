@@ -16,22 +16,15 @@ namespace MoneyPlan.DAO.Mapping
             builder.ToTable("BudgetPlanRules");
 
             builder.HasKey(x => x.Id);
-
-            builder.Property(x => x.Income)
-                .HasDefaultValue(false)
-                .IsRequired();
-
-            /*
+            
             builder.Property(x => x.BudgetPlanId)
-                .IsRequired(false);
-            */
-            /*
+                .IsRequired(true);
+            
             builder.HasOne(x => x.BudgetPlan)
                 .WithMany(x => x.Rules)
-                .HasForeignKey(x => x.Id)
+                .HasForeignKey(x => x.BudgetPlanId)
                 .HasPrincipalKey(x => x.Id)
-                .IsRequired(false);
-            */
+                .IsRequired(true);
         }
     }
 }

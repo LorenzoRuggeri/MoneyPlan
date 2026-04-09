@@ -2,17 +2,20 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Savings.DAO.Infrastructure;
 
 #nullable disable
 
-namespace Savings.DAO.Migrations
+namespace MoneyPlan.DAO.Migrations
 {
     [DbContext(typeof(SavingsContext))]
-    partial class SavingsContextModelSnapshot : ModelSnapshot
+    [Migration("20260408192602_AddForeignKeyOnBudgetPlan")]
+    partial class AddForeignKeyOnBudgetPlan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.25");
